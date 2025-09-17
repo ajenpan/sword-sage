@@ -1,0 +1,12 @@
+{
+    "name": "sword-sage",
+    "version": "0.1.0",
+    "title": "剑仙",
+    "author": "Ajen",
+    "factorio_version": "2.0",
+    "dependencies": [
+        "base >= 2.0",
+        "space-age >= 2.0"
+    ],
+    "description": "剑仙mod正在开发中."
+}
