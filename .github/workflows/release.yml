@@ -1,16 +1,17 @@
-name: Release to Factorio Mod Portal
+name: Release Mod
 on:
   push:
     tags:
       - "v*.*.*"
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Zip Mod
         run: |
@@ -18,10 +19,35 @@ jobs:
           MOD_VERSION=$(jq -r .version info.json)
           ZIP_NAME="${MOD_NAME}_${MOD_VERSION}.zip"
           zip -r "$ZIP_NAME" . -x ".git*" ".github/*"
+          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
-      - name: Create GitHub Release
+
+      - name: Upload to Factorio Mod Portal (init)
+        run: |
+          curl -s -X POST https://mods.factorio.com/api/v2/mods/releases/init \
+            -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
+            -F "mod=${{ env.MOD_NAME }}" \
+            -F "file=@${{ env.ZIP_NAME }}" \
+            -o upload.json
+          cat upload.json
+          echo "UPLOAD_URL=$(jq -r .upload_url upload.json)" >> $GITHUB_ENV
+
+      - name: Upload to Factorio Mod Portal (finish)
+        run: |
+          curl -s -X POST "https://mods.factorio.com${{ env.UPLOAD_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
+            -F "file=@${{ env.ZIP_NAME }}"
+
+      # 上传到 GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ZIP_NAME }}
+          body: |
+            🚀 自动发布 Factorio Mod
+            - Mod: **${{ env.MOD_NAME }}**
+            - Version: **${{ env.MOD_VERSION }}**
+            - Tag: **${{ github.ref_name }}**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -85,8 +85,8 @@ local function get_new_team_id()
   local all_team_infos = tm.all_team_info()
   local usesd_index = {}
   local team_id = 1
-  for _, force_info in pairs(all_team_infos) do
-    usesd_index[tostring(force_info.index)] = true
+  for _, team_info in pairs(all_team_infos) do
+    usesd_index[tostring(team_info.team_id)] = true
   end
   while true do
     if usesd_index[team_id] then
@@ -252,7 +252,7 @@ function tm.on_research_finished(event)
   local teaminfo = tm.get_team_info_by_index(research.force.index)
   if teaminfo == nil then return end
 
-  LogD("tm.on_research_finished ", { teamname = teaminfo.name, researchname = research.name })
+  -- LogD("tm.on_research_finished ", { teamname = teaminfo.name, researchname = research.name })
 
   local add_team_lifespan_map = {
     ["promethium-science-pack"] = 6,
