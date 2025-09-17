@@ -37,6 +37,8 @@ local function on_init(event)
   game.technology_notifications_enabled = false
   game.forces.player.share_chart = true
 
+  g_tm.on_init()
+  g_pf.on_init()
   g_mg.on_init()
 end
 

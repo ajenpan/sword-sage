@@ -112,9 +112,6 @@ function mg.on_second(event)
     if step == 1 then
       storage.map_gen_init.step = step + 1
 
-      game.default_map_gen_settings.width = max_team_area_size.x * 5 * 2
-      game.default_map_gen_settings.height = max_team_area_size.y * 5 * 2
-
       for _, planet in pairs(game.planets) do
         local surface = planet.surface
         if surface == nil then
@@ -129,10 +126,9 @@ function mg.on_second(event)
         surface.map_gen_settings = setting
         surface.peaceful_mode = true
         surface.no_enemies_mode = true
+        surface.always_day = true
         LogI("map_gen_settings:", { setting = surface.map_gen_settings, name = planet.name })
       end
-      game.planets.nauvis.surface.peaceful_mode = true
-      game.planets.nauvis.surface.no_enemies_mode = true
     elseif step == 2 then
       if (mg.is_team_area_chunk_generated({ x = 0, y = 0 })) then
         storage.map_gen_init.step = step + 1
@@ -264,7 +260,6 @@ end
 function mg.is_team_area_chunk_generated(pos)
   local left_top, right_bottom = get_bounding_box_pos(pos, max_team_area_size)
   local chunk_pos = get_chunk_pos(left_top, right_bottom)
-
   local ret = true
   for _, planet in pairs(game.planets) do
     for i, chunkpos in pairs(chunk_pos) do

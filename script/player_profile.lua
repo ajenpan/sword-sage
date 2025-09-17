@@ -27,6 +27,17 @@ for i = 1, max_level do
 end
 pf.xp_required_table = xp_required_table
 
+
+function pf.on_init()
+  if storage.player_profile == nil then
+    storage.player_profile = {}
+  end
+
+  for i, info in pairs(storage.player_profile) do
+    LogI("player_profile:", info)
+  end
+end
+
 -- todo: 根据转生次数提高经验要求??
 function pf.get_required_xp(lv)
   if lv > 0 and lv <= max_level then
@@ -46,10 +57,6 @@ end
 
 function pf.player_profile(player)
   local s = storage.player_profile
-  if s == nil then
-    storage.player_profile = {}
-    s = storage.player_profile
-  end
   if s[player.index] == nil then
     s[player.index] = {
       assigned_ap = {},

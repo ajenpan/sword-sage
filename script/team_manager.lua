@@ -4,8 +4,13 @@ local utils = require("script.utils")
 
 local tm = {}
 
-function tm.on_init(event)
-  -- for
+function tm.on_init()
+  if storage.team == nil then
+    storage.team = {}
+  end
+  for i, info in pairs(storage.team) do
+    LogI("teaminfo:", info)
+  end
 end
 
 -- 门派名是否存在
@@ -35,7 +40,10 @@ end
 
 function tm.get_team_name(force)
   local team = tm.get_team_info_by_index(force.index)
-  return team and team.name or ""
+  if team == nil then
+    return ""
+  end
+  return team.name
 end
 
 function tm.get_team_info(player)
@@ -85,9 +93,11 @@ local function get_new_team_id()
   local all_team_infos = tm.all_team_info()
   local usesd_index = {}
   local team_id = 1
+
   for _, team_info in pairs(all_team_infos) do
-    usesd_index[tostring(team_info.team_id)] = true
+    usesd_index[team_info.team_id] = true
   end
+
   while true do
     if usesd_index[team_id] then
       team_id = team_id + 1
@@ -97,6 +107,8 @@ local function get_new_team_id()
   end
   return team_id
 end
+
+tm.get_new_team_id = get_new_team_id
 
 local function create_team_force(player, team_name)
   local force_name = "player" .. player.index
@@ -579,6 +591,8 @@ function tm.on_click_join_team(event)
   -- player.character_crafting_speed_modifier = (index - 1) * 0.5
   -- player.character_mining_speed_modifier = (index - 1) * 0.5
   g_ui.set_main_frame_visible(player, false)
+
+  script.raise_event(g_custom_event.on_player_join_team, { tick = game.tick, player_index = player.index, cause = "byself" })
 end
 
 function tm.on_player_left_team(event)

@@ -29,8 +29,9 @@ function pm.on_player_join_team(event)
   if not (player and player.character and player.character.valid) then
     return
   end
+
   -- 设置角色属性
-  -- 就不送了, 送 ap 点
+  -- 就不送了, 送 ap 点是不是比较好
   local ascension_cnt = g_pf.get_player_ascension_cnt(player)
   -- player.character_crafting_speed_modifier = modifier
   -- player.character_mining_speed_modifier = modifier
@@ -51,7 +52,6 @@ function pm.on_player_join_team(event)
 
   local armor_inv = player.get_inventory(defines.inventory.character_armor)
   if armor_inv and (armor_inv.is_empty() or not armor_inv[1].valid_for_read) then
-    local quality = "legendary"
     -- local quality = "normal"
     -- player.insert{ name = "mech-armor", count = 1, quality = quality }
     -- player.insert{ name = "modular-armor", count = 1 }
@@ -67,6 +67,7 @@ function pm.on_player_join_team(event)
       return
     end
 
+    local quality = "legendary"
     player.insert{ name = "personal-roboport-equipment", count = 1, quality = quality }
     player.insert{ name = "solar-panel-equipment", count = 2, quality = quality }
 
@@ -111,9 +112,9 @@ function pm.on_minute(event)
 end
 
 function pm.on_player_left_game(event)
-  -- local player = game.players[event.player_index]
-  -- player.tag = level.get_name(player, true)
-  -- gui_xiaohui(player)
+  local player = game.players[event.player_index]
+  if not (player and player.character) then return end
+  g_ui.set_main_frame_visible(player, false)
   -- game.print(string.format("[color=#ffff00]%s[/color] [color=#00ffff]%s[/color]%s 开始闭关修炼",
   --   tm.get_force_name(player.force), player.name, player.tag))
 end

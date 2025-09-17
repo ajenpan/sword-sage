@@ -62,7 +62,7 @@ local function create_team_rank_pane(frame, player)
 
   table.sort(force_techs, function (a, b) return a.tech_score > b.tech_score end)
 
-  local tab = g_uih.add(frame, { type = "table", name = "zmb_shuju", column_count = 7, horizontal_scroll_policy = "never", vertical_scroll_policy = "auto-and-reserve-space", })
+  local tab = g_uih.add(frame, { type = "table", column_count = 7, horizontal_scroll_policy = "never", vertical_scroll_policy = "auto-and-reserve-space", })
   -- 添加排序后的数据
   -- 总人数
   local total_player_count = 0
