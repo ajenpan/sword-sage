@@ -25,17 +25,18 @@ jobs:
 
       - name: Upload to Factorio Mod Portal (init)
         run: |
-          MOD_NAME=$(jq -r .name info.json)
+          MOD_NAME=${{ env.MOD_VERSION }}
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"mod": "'"$MOD_NAME"'"}' \
-            "https://mods.factorio.com/api/v2/mods/${MOD_NAME}/releases/init_upload")
+            -d '{"mod": "${{ env.MOD_VERSION }}" }' \
+            "https://mods.factorio.com/api/v2/mods/releases/init_upload")
+          echo $RESPONSE
           echo "UPLOAD_URL=$(echo $RESPONSE | jq -r .upload_url)" >> $GITHUB_ENV
 
       - name: Upload to Factorio Mod Portal (finish)
         run: |
-          ZIP_NAME="${{ steps.prep.outputs.ZIP_NAME }}"
+          ZIP_NAME="${{ env.ZIP_NAME }}"
           UPLOAD_URL="${{ env.UPLOAD_URL }}"
           echo "Uploading $ZIP_NAME to $UPLOAD_URL ..."
           curl -X POST "$UPLOAD_URL" \
