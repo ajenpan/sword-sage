@@ -25,19 +25,24 @@ jobs:
 
       - name: Upload to Factorio Mod Portal (init)
         run: |
-          curl -s -X POST https://mods.factorio.com/api/v2/mods/releases/init \
+          MOD_NAME=$(jq -r .name info.json)
+          RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
-            -F "mod=${{ env.MOD_NAME }}" \
-            -F "file=@${{ env.ZIP_NAME }}" \
-            -o upload.json
-          cat upload.json
-          echo "UPLOAD_URL=$(jq -r .upload_url upload.json)" >> $GITHUB_ENV
+            -H "Content-Type: application/json" \
+            -d '{"mod": "'"$MOD_NAME"'"}' \
+            "https://mods.factorio.com/api/v2/mods/${MOD_NAME}/releases/init_upload")
+          echo "UPLOAD_URL=$(echo $RESPONSE | jq -r .upload_url)" >> $GITHUB_ENV
 
       - name: Upload to Factorio Mod Portal (finish)
         run: |
-          curl -s -X POST "https://mods.factorio.com${{ env.UPLOAD_URL }}" \
+          ZIP_NAME="${{ steps.prep.outputs.ZIP_NAME }}"
+          UPLOAD_URL="${{ env.UPLOAD_URL }}"
+          echo "Uploading $ZIP_NAME to $UPLOAD_URL ..."
+          curl -X POST "$UPLOAD_URL" \
             -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
-            -F "file=@${{ env.ZIP_NAME }}"
+            -F "file=@${ZIP_NAME}" \
+            -o upload_result.json
+          cat upload_result.json
 
       # 上传到 GitHub Release
       - name: Upload to GitHub Release
