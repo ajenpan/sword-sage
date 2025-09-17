@@ -20,7 +20,7 @@ jobs:
           zip -r "$ZIP_NAME" . -x ".git*" ".github/*"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ZIP_NAME }}
         env:
