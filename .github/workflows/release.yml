@@ -1,0 +1,27 @@
+name: Release to Factorio Mod Portal
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      - name: Zip Mod
+        run: |
+          MOD_NAME=$(jq -r .name info.json)
+          MOD_VERSION=$(jq -r .version info.json)
+          ZIP_NAME="${MOD_NAME}_${MOD_VERSION}.zip"
+          zip -r "$ZIP_NAME" . -x ".git*" ".github/*"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.ZIP_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
