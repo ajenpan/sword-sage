@@ -25,11 +25,10 @@ jobs:
 
       - name: Upload to Factorio Mod Portal (init)
         run: |
-          MOD_NAME=${{ env.MOD_VERSION }}
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"mod": "${{ env.MOD_VERSION }}" }' \
+            -d '{"mod": "${{ env.MOD_NAME }}" }' \
             "https://mods.factorio.com/api/v2/mods/releases/init_upload")
           echo $RESPONSE
           echo "UPLOAD_URL=$(echo $RESPONSE | jq -r .upload_url)" >> $GITHUB_ENV
@@ -46,14 +45,14 @@ jobs:
           cat upload_result.json
 
       # 上传到 GitHub Release
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ env.ZIP_NAME }}
-          body: |
-            🚀 自动发布 Factorio Mod
-            - Mod: **${{ env.MOD_NAME }}**
-            - Version: **${{ env.MOD_VERSION }}**
-            - Tag: **${{ github.ref_name }}**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Upload to GitHub Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: ${{ env.ZIP_NAME }}
+      #     body: |
+      #       🚀 自动发布 Factorio Mod
+      #       - Mod: **${{ env.MOD_NAME }}**
+      #       - Version: **${{ env.MOD_VERSION }}**
+      #       - Tag: **${{ github.ref_name }}**
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
