@@ -23,10 +23,10 @@ g_ptp = require("script.player_teleport")
 g_ui = require("script.ui_frame")
 g_mg = require("script.map_gen")
 
-SwordSageDebugMod = true
-LogLevel = LogLevelEnum.Debug
-GM_INIT = false
+SwordSageDebugMod = false
+LogLevel = LogLevelEnum.Info
 
+GM_INIT = false
 
 local function on_init(event)
   if GM_INIT then
