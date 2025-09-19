@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -15,9 +17,11 @@ jobs:
       - name: Zip Mod
         run: |
           MOD_NAME=$(jq -r .name info.json)
-          MOD_VERSION=$(jq -r .version info.json)
+          MOD_VERSION="${GITHUB_REF_NAME#v}"
+          echo ${MOD_VERSION}
           ZIP_NAME="${MOD_NAME}_${MOD_VERSION}.zip"
           DirName="$(basename `pwd`)"
+          jq --arg v "$MOD_VERSION" '.version = $v' info.json > info_tmp.json && mv info_tmp.json info.json
           cd .. && zip -q -r $ZIP_NAME $DirName/*
           echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
           echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
@@ -32,8 +36,6 @@ jobs:
             "https://mods.factorio.com/api/v2/mods/releases/init_upload")
           echo $RESPONSE
           echo "UPLOAD_URL=$(echo $RESPONSE | jq -r .upload_url)" >> $GITHUB_ENV
-        env:
-          FACTORIO_API_KEY: ${{ secrets.FACTORIO_API_KEY }}
       - name: Upload to Factorio Mod Portal (finish)
         run: |
           ZIP_NAME="${{ env.ZIP_NAME }}"
@@ -45,14 +47,11 @@ jobs:
             -o upload_result.json
           cat upload_result.json
 
-        # 上传到 GitHub Release
-      # - name: Upload to GitHub Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     files: ${{ env.ZIP_NAME }}
-      #     body: |
-      #       - Mod: **${{ env.MOD_NAME }}**
-      #       - Version: **${{ env.MOD_VERSION }}**
-      #       - Tag: **${{ github.ref_name }}**
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_NAME }}
+          body: |
+            - Mod: **${{ env.MOD_NAME }}**
+            - Version: **${{ env.MOD_VERSION }}**
+            - Tag: **${{ github.ref_name }}**
