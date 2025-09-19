@@ -1,7 +1,9 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.1.5
+Version: 0.1.7
 Date: 09.19.2025
   Bugfixes:
     - fix crash on create platform
   Scripting:
     - improved the performance of the gui tabbed panne on selected
+    - fix init twice from scenarios and mods
+    - fix there are no big-volcanic-rock in the volcanous

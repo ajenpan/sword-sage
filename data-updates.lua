@@ -15,4 +15,3 @@ data.raw["technology"]["artillery-shell-damage-1"].enabled = false
 data.raw["technology"]["artillery-shell-range-1"].enabled = false
 data.raw["technology"]["artillery-shell-speed-1"].enabled = false
 data.raw["technology"]["atomic-bomb"].enabled = false
- 

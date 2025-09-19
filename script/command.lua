@@ -57,7 +57,7 @@ script.on_event(defines.events.on_console_chat, function (event)
   end
 
   if message == "钓鱼" or message == "捕鱼" then
-    local count = math.random(-3, 1)
+    local count = math.random(-1, 2)
     if count > 0 then
       insert_item(player, "raw-fish")
     else

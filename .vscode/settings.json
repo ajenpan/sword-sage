@@ -1,0 +1,21 @@
+{
+    "Lua.workspace.ignoreDir": [
+        ".vscode"
+    ],
+    "Lua.diagnostics.globals": [
+        "game",
+        "storage",
+        "defines",
+        "script",
+        "prototypes",
+        "log",
+        "serpent",
+        "data",
+        "settings",
+    ],
+    "Lua.diagnostics.disable": [
+        "param-type-mismatch"
+    ],
+    "Lua.completion.autoRequire": false,
+    "Lua.workspace.checkThirdParty": "ApplyInMemory"
+}

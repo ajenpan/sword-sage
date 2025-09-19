@@ -415,7 +415,7 @@ function mg.create_team_vulcanus_area(force, center_pos, left_top, right_bottom)
   local rock_left_top = { x = center_pos.x - 32, y = center_pos.y - 32 }
   local rock_right_bottom = add_pos(rock_left_top, { x = 64, y = 32 })
   mg.create_rect_pos(rock_left_top, rock_right_bottom, { x = 8, y = 8 }, nil, function (pos)
-    surface.create_entity({ name = "huge-volcanic-rock", position = pos })
+    surface.create_entity({ name = "big-volcanic-rock", position = pos })
   end)
 
   rock_left_top = { x = center_pos.x - 32, y = center_pos.y }

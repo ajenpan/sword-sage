@@ -330,6 +330,12 @@ function fight_area.create_gui_pane(frame, player)
     style = "confirm_button_without_tooltip",
     on_click = function (event)
       local player = game.get_player(event.player_index)
+      if not (player and player.character) then return end
+      if player.character.surface.platform ~= nil then
+        player.print("太空中无法传送")
+        return
+      end
+
       g_ui.set_main_frame_visible(player, false)
       local config = fight_area.state_info(player).config
       config.lv = pf.get_player_level(player)
