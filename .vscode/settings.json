@@ -12,10 +12,11 @@
         "serpent",
         "data",
         "settings",
+        "remote",
     ],
     "Lua.diagnostics.disable": [
         "param-type-mismatch"
     ],
     "Lua.completion.autoRequire": false,
-    "Lua.workspace.checkThirdParty": "ApplyInMemory"
+    "Lua.workspace.checkThirdParty": "ApplyInMemory",
 }

@@ -24,7 +24,6 @@ function Coins.on_entity_died(event)
     return
   end
 
-
   local drop_amount = 0
   if (count < 1) then
     local n = math.random(100)

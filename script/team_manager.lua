@@ -155,11 +155,23 @@ local function create_team_force(player, team_name)
     force.technologies["planet-discovery-gleba"].researched = true    -- 发现星球
   end
 
+  for i, f in pairs(game.forces) do
+    if (f.index == force.index) then
+      goto continue
+    end
+    if (string.sub(f.name, 1, #"player") ~= "player") then
+      goto continue
+    end
+
+    f.set_friend(force, true)
+    force.set_friend(f, true)
+
+    f.set_cease_fire(force, false)
+    force.set_cease_fire(f, false)
+    ::continue::
+  end
+
   force.share_chart = true
-  force.set_friend(game.forces.player, true)
-  game.forces.player.set_friend(force, true)
-  force.set_cease_fire(game.forces.player, true)
-  game.forces.player.set_cease_fire(force, true)
 
   local team_id = get_new_team_id()
 
@@ -212,6 +224,13 @@ local function create_team_force(player, team_name)
   return force
 end
 
+function tm.add_max_lifespan(teaminfo, life_tick)
+  teaminfo.max_lifespan = teaminfo.max_lifespan + life_tick
+  if teaminfo.max_lifespan > 500 * TICKS_PER_HOUR then
+    teaminfo.max_lifespan = 500 * TICKS_PER_HOUR
+  end
+end
+
 function tm.create_new_team(player, team_name)
   local force = create_team_force(player, team_name)
 
@@ -237,7 +256,6 @@ function tm.destroy_team(teaminfo)
   game.print("门派 [color=#ffff00]" .. name .. "[/color] 湮灭于 [color=#ff00ff]归墟[/color]")
 
   for _, player in pairs(force.players) do
-    -- game.print("道友 [color=#00ffff]" .. player.name .. "[/color] 转生")
     -- 清空玩家背包
     player.clear_items_inside()
     player.force = game.forces.player
@@ -248,7 +266,8 @@ function tm.destroy_team(teaminfo)
     end
   end
 
-  g_mg.destroy_team_area(teaminfo.spawn_position)
+  -- g_mg.destroy_team_area(teaminfo.spawn_position)
+
   tm.all_team_info()[force.index] = nil
 
   for _, platform in pairs(force.platforms) do
@@ -279,7 +298,8 @@ function tm.on_research_finished(event)
   }
 
   if add_team_lifespan_map[research.name] then
-    teaminfo.max_lifespan = teaminfo.max_lifespan + 6 * TICKS_PER_HOUR
+    -- teaminfo.max_lifespan = teaminfo.max_lifespan + 6 * TICKS_PER_HOUR
+    tm.add_max_lifespan(teaminfo, 6 * TICKS_PER_HOUR)
   end
 end
 
@@ -367,6 +387,15 @@ end
 
 function tm.on_minute(event)
 
+end
+
+function tm.on_10_minute(event)
+  for _, player in pairs(game.connected_players) do
+    local teaminfo = tm.get_team_info(player)
+    if teaminfo then
+      tm.add_max_lifespan(teaminfo, 100)
+    end
+  end
 end
 
 -- 检测是否在自己区域
@@ -503,6 +532,8 @@ function tm.create_gui_pane(frame, player)
     }
   )
 
+  uih.add(pane, { type = "line" })
+  uih.add(pane, { type = "label", caption = "门派最大离线时间:" .. team_info.max_lifespan / TICKS_PER_HOUR .. "小时,(在线1小时加10分钟,每次飞升加12小时,科研加6个小时,最长不超过500小时)" })
   uih.add(pane, { type = "line" })
   uih.add(pane, { type = "label", caption = "成员列表: (待开发中)" })
 end
@@ -666,7 +697,7 @@ function tm.do_ascension(player)
 
   player.tag = g_pf.get_player_title(g_pf.get_player_ascension_cnt(player))
 
-  local count = profile.ascension_cnt
+  local count = profile.ascension_cnt * 2
   local spawn_surface = teaminfo.spaspawn_surface_name
   player.force = game.forces.player
 
@@ -691,6 +722,12 @@ function tm.do_ascension(player)
   end
   profile.record_spawn_surface_count[surface_name] = profile.record_spawn_surface_count[surface_name] + 1
 
+  -- 先清空玩家背包
+  local main_inventory = player.get_inventory(defines.inventory.character_main)
+  if main_inventory then
+    main_inventory.clear()
+  end
+
   if player.character.surface.platform ~= nil then
     -- 将trash的前count格物品插入玩家背包
     local trash = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
@@ -714,8 +751,13 @@ function tm.unlock_tech_by_ascension(player)
   if profile.record_spawn_surface_count == nil then
     profile.record_spawn_surface_count = {}
   end
+  local spawn_record = profile.record_spawn_surface_count
 
-  local info = profile.record_spawn_surface_count
+  local force = player.force
+  local ascension_cnt = g_pf.get_player_ascension_cnt(player)
+  local common_level = math.ceil(ascension_cnt / 4) + 7
+
+  force.worker_robots_speed_modifier = 2
 
   local planet_techs = {
     {
@@ -764,9 +806,7 @@ function tm.unlock_tech_by_ascension(player)
     { threshold = 60, tech = "transport-belt-capacity-2", msg = "传送带容量II" }
   }
 
-  local force = player.force
-  local ascension_cnt = g_pf.get_player_ascension_cnt(player)
-  local common_level = math.ceil(ascension_cnt / 4) + 7
+
 
   -- 处理等级解锁技术
   for _, unlock in ipairs(index_unlocks) do
@@ -797,7 +837,7 @@ function tm.unlock_tech_by_ascension(player)
 
   -- 处理星球技术
   for _, planet in ipairs(planet_techs) do
-    local cnt = info[planet.name] or 0
+    local cnt = spawn_record[planet.name] or 0
     if cnt > 0 then
       local count = planet.cap and math.min(cnt, planet.cap) or cnt
       local msg = { string.format("在[planet=%s]重生%d次", planet.name, cnt) }

@@ -96,7 +96,9 @@ script.on_event(defines.events.on_player_joined_game, function (event)
 end)
 
 script.on_event(defines.events.on_player_left_game, function (event)
-  LogI("on_player_left_game", event)
+  local player = game.players[event.player_index]
+  if not (player) then return end
+  LogI("on_player_left_game", { pidx = event.player_index, name = player.name })
 
   g_tm.on_player_left_game(event)
 end)

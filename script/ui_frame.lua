@@ -79,10 +79,10 @@ end
 
 function ui.reopen_tabbed_pane(tab_index, player)
   local uis = ui.player_storage(player)
-  if uis.main_tabbed_pane_selected_tab_index == tab_index then
-    return
-  end
-  uis.main_tabbed_pane_selected_tab_index = tab_index
+  -- if uis.main_tabbed_pane_selected_tab_index == tab_index then
+  --   return
+  -- end
+  uis.main_tabbed_pane_selected_index = tab_index
   local tabbed_pane = uis.main_tabbed_pane
   if not (tabbed_pane and tabbed_pane[tab_index]) then return end
   local pane = tabbed_pane[tab_index].pane_element
@@ -181,6 +181,8 @@ function ui.set_main_frame_visible(player, visible)
       ui_frame = ui.create_frame(player)
     end
     ui_frame.visible = true
+    local uis = ui.player_storage(player)
+    ui.reopen_tabbed_pane(uis.main_tabbed_pane_selected_index or 1, player)
   else
     if ui_frame == nil then
       return
@@ -212,7 +214,6 @@ function ui.on_gui_selected_tab_changed(event)
   if not (player) then return end
 
   if element.name == "main-tabbed-pane" then
-    LogI("ui.on_gui_selected_tab_changed:", { name = element.name, type = element.type, selected_tab_index = element.selected_tab_index })
     ui.reopen_tabbed_pane(element.selected_tab_index, player)
   end
 end

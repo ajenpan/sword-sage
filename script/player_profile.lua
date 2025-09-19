@@ -3,12 +3,12 @@ local util = require("util")
 local uih = require("script.ui_helper")
 
 local Attributes = {
-  "STR", -- 力量 加伤害
+  "STR", -- 力量 加伤害,背包容量,挖矿速度
   "DEX", -- 敏捷 加暴击
   "LUK", -- 幸运 加掉落率
   "CON", -- 体力 加血量
-  "SPI", -- 精神 加交互范围,背包容量.制作速度
-  "INT", -- 智力 加研究速度
+  "SPI", -- 精神 加交互范围.
+  "INT", -- 智力 加研究速度.制作速度
 }
 
 local pf = {}
@@ -59,11 +59,11 @@ function pf.player_profile(player)
   local s = storage.player_profile
   if s[player.index] == nil then
     s[player.index] = {
+      ascension_cnt = 1,
       assigned_ap = {},
       usable_ap = 1,
       level = 1,
       xp = 0,
-      ascension_cnt = 1,
     }
   end
   return s[player.index]
@@ -87,34 +87,43 @@ function pf.inc_player_ap(player, attrib, inc)
     inc = 1
   end
 
-  local storage = pf.player_profile(player)
-  if not (storage and storage.usable_ap >= inc) then
+  local profile = pf.player_profile(player)
+  if not (profile and profile.usable_ap >= inc) then
+    return
+  end
+  local character = player.character
+  if not (character and character.valid) then
+    player.print("没有玩家实体, 加成无效")
     return
   end
 
-  if not storage.assigned_ap[attrib] then
-    storage.assigned_ap[attrib] = 0
+  if not profile.assigned_ap[attrib] then
+    profile.assigned_ap[attrib] = 0
   end
 
-  storage.usable_ap = storage.usable_ap - 1
-  storage.assigned_ap[attrib] = storage.assigned_ap[attrib] + inc
+  profile.usable_ap = profile.usable_ap - inc
+  profile.assigned_ap[attrib] = profile.assigned_ap[attrib] + inc
 
   -- effect
-
-  local character = player.character
-  if not (character and character.valid) then return end
 
   if attrib == "CON" then
     character.character_health_bonus = character.character_health_bonus + 100 * inc
   elseif attrib == "SPI" then
     character.character_resource_reach_distance_bonus = character.character_resource_reach_distance_bonus + 1 * inc
+    character.character_reach_distance_bonus = character.character_reach_distance_bonus + 1 * inc
+    character.character_item_drop_distance_bonus = character.character_item_drop_distance_bonus + 1 * inc
+    character.character_build_distance_bonus = character.character_build_distance_bonus + 1 * inc
+    character.character_item_pickup_distance_bonus = character.character_item_pickup_distance_bonus + 1 * inc
+    character.character_loot_pickup_distance_bonus = character.character_loot_pickup_distance_bonus + 1 * inc
   elseif attrib == "DEX" then
     character.character_running_speed_modifier = character.character_running_speed_modifier + 0.2 * inc
+  elseif attrib == "STR" then
+    player.character.character_inventory_slots_bonus = player.character.character_inventory_slots_bonus + 5 * inc
+    player.character_mining_speed_modifier = player.character_mining_speed_modifier + 0.1 * inc
+  elseif attrib == "INT" then
+    player.character_crafting_speed_modifier = player.character_crafting_speed_modifier + 0.1 * inc
+    player.character_maximum_following_robot_count_bonus = player.character_maximum_following_robot_count_bonus + 1 * inc
   end
-end
-
-function pf.player_full_name(player)
-
 end
 
 function pf.create_profile_pane(frame, player)

@@ -161,13 +161,9 @@ function mg.on_second(event)
         end
       end
     elseif step == 4 then
-      -- for i = 1, 10 do
-      --   local pos = mg.get_team_area_pos(i)
-      --   mg.create_team_area(game.forces.enemy, pos)
-      -- end
       storage.map_gen_init = nil
     else
-      step = step + 1
+      storage.map_gen_init = nil
     end
   end
 end
@@ -520,11 +516,11 @@ function mg.create_team_gleba_area(force, center_pos, left_top, right_bottom)
   local yumako_left_top = add_pos(center_pos, { x = -48, y = -48 })
   local yumako_right_bottom = add_pos(yumako_left_top, { x = 48, y = 96 })
   mg.create_rect_pos(yumako_left_top, yumako_right_bottom, { x = 1, y = 1 }, { x = 0, y = 0 }, function (pos)
-    surface.set_tiles({ { name = "natural-yumako-soil", position = pos } })
+    surface.set_tiles({ { name = "natural-jellynut-soil", position = pos } })
   end)
 
   mg.create_rect_pos(yumako_left_top, yumako_right_bottom, { x = 3, y = 3 }, { x = 1, y = 1 }, function (pos)
-    surface.create_entity{ name = "yumako-tree", position = pos }
+    surface.create_entity{ name = "jellystem", position = pos }
   end)
 
   mg.create_rect_pos(yumako_left_top, yumako_right_bottom, { x = 3, y = 3 }, { x = 5, y = 5 }, function (pos)
@@ -535,11 +531,11 @@ function mg.create_team_gleba_area(force, center_pos, left_top, right_bottom)
   local jellynut_left_top = add_pos(center_pos, { x = 0, y = -48 })
   local jellynut_right_bottom = add_pos(jellynut_left_top, { x = 48, y = 96 })
   mg.create_rect_pos(jellynut_left_top, jellynut_right_bottom, { x = 1, y = 1 }, { x = 0, y = 0 }, function (pos)
-    surface.set_tiles({ { name = "natural-jellynut-soil", position = pos } })
+    surface.set_tiles({ { name = "natural-yumako-soil", position = pos } })
   end)
 
   mg.create_rect_pos(jellynut_left_top, jellynut_right_bottom, { x = 3, y = 3 }, { x = 1, y = 1 }, function (pos)
-    surface.create_entity{ name = "jellystem", position = pos }
+    surface.create_entity{ name = "yumako-tree", position = pos }
   end)
 
   mg.create_rect_pos(jellynut_left_top, jellynut_right_bottom, { x = 3, y = 3 }, { x = 5, y = 5 }, function (pos)

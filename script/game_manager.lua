@@ -56,6 +56,18 @@ end
 
 init_gui()
 
+remote.add_interface("sword-sage", {
+  get_storage = function () return storage end,
+  dostring = function (str)
+    local f, err = load(str)
+    if not f then
+      error("编译错误: " .. err)
+      return nil
+    end
+    return f()
+  end
+})
+
 return {
   on_init = on_init
 }
