@@ -46,13 +46,13 @@ jobs:
           cat upload_result.json
 
         # 上传到 GitHub Release
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ env.ZIP_NAME }}
-          body: |
-            - Mod: **${{ env.MOD_NAME }}**
-            - Version: **${{ env.MOD_VERSION }}**
-            - Tag: **${{ github.ref_name }}**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Upload to GitHub Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: ${{ env.ZIP_NAME }}
+      #     body: |
+      #       - Mod: **${{ env.MOD_NAME }}**
+      #       - Version: **${{ env.MOD_VERSION }}**
+      #       - Tag: **${{ github.ref_name }}**
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

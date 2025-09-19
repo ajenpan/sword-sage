@@ -127,7 +127,7 @@ function mg.on_second(event)
         surface.peaceful_mode = true
         surface.no_enemies_mode = true
         surface.always_day = true
-        LogI("map_gen_settings:", { setting = surface.map_gen_settings, name = planet.name })
+        -- LogI("map_gen_settings:", { setting = surface.map_gen_settings, name = planet.name })
       end
     elseif step == 2 then
       if (mg.is_team_area_chunk_generated({ x = 0, y = 0 })) then

@@ -10,11 +10,14 @@ LogLevel = LogLevelEnum.Info
 
 function DoLog(level, msg, ...)
   if LogLevel and level >= LogLevel then
-    local content = msg .. serpent.line({ ... })
-    if SwordSageDebugMod then
-      game.print(content)
+    local args = { ... }
+    if #args > 0 then
+      msg = msg .. serpent.line(args)
     end
-    return log(content)
+    if SwordSageDebugMod then
+      game.print(msg)
+    end
+    return log(msg)
   end
 end
 

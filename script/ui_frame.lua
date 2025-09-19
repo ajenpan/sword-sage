@@ -43,10 +43,17 @@ function ui.register_tabbed_pane(name, caption, create_fn)
     name = name,
     caption = caption,
     create_fn = create_fn,
+    tab_element = nil,
+    pane_element = nil,
   }
 end
 
 function ui.create_registered_tabbed_pane(tabbed_pane, player)
+  local s = ui.player_storage(player)
+  if s.main_tabbed_pane == nil then
+    s.main_tabbed_pane = {}
+  end
+
   for i, item in ipairs(ui.register_tabbed) do
     local tab_name = item.name .. "_tab"
     local pane_name = item.name .. "_pane"
@@ -59,9 +66,28 @@ function ui.create_registered_tabbed_pane(tabbed_pane, player)
 
       tabbed_pane.add_tab(tab, pane)
     end
-    pane.clear()
-    item.create_fn(pane, player)
+    -- pane.clear()
+    -- item.create_fn(pane, player)
+    -- item.tab_element = tab
+    -- item.pane_element = pane
+    s.main_tabbed_pane[i] = {
+      tab_element = tab,
+      pane_element = pane,
+    }
   end
+end
+
+function ui.reopen_tabbed_pane(tab_index, player)
+  local uis = ui.player_storage(player)
+  if uis.main_tabbed_pane_selected_tab_index == tab_index then
+    return
+  end
+  uis.main_tabbed_pane_selected_tab_index = tab_index
+  local tabbed_pane = uis.main_tabbed_pane
+  if not (tabbed_pane and tabbed_pane[tab_index]) then return end
+  local pane = tabbed_pane[tab_index].pane_element
+  pane.clear()
+  ui.register_tabbed[tab_index].create_fn(pane, player)
 end
 
 function ui.create_main_float_frame(player)
@@ -74,14 +100,24 @@ function ui.create_main_float_frame(player)
   ptp.create_teleport_button_list(player, float_frame)
 end
 
-function ui.create_frame(player)
+function ui.destory_main_float_frame(player)
+  local float_frame = player.gui.top["main_float_frame"]
+  if (float_frame == nil) then return end
+  float_frame.destroy()
+end
+
+function ui.destory_main_frame(player)
   if player.gui.screen[frame_cfg.frame_name] ~= nil then
     player.gui.screen[frame_cfg.frame_name].destroy()
-    player.gui.screen[frame_cfg.frame_name] = nil
   end
+end
+
+function ui.create_frame(player)
+  ui.destory_main_frame(player)
 
   local frame = player.gui.screen.add{ type = "frame", name = frame_cfg.frame_name, direction = "vertical" }
   frame.force_auto_center()
+  frame.visible = false
 
   local title_flow = frame.add{ type = "flow", direction = "horizontal" }
   title_flow.style.horizontally_stretchable = true
@@ -94,7 +130,6 @@ function ui.create_frame(player)
   filler.style.size = { 600, 24 }
   filler.drag_target = frame
 
-
   uih.add(title_flow, {
     name = "bnt_close_uiframe",
     type = "sprite-button",
@@ -103,14 +138,14 @@ function ui.create_frame(player)
     style_table = { size = { 32, 24 } },
   })
 
-
-  local tabbed_pane = frame.add{ type = "tabbed-pane" }
+  local tabbed_pane = frame.add{ type = "tabbed-pane", name = "main-tabbed-pane" }
   tabbed_pane.selected_tab_index = 1
   tabbed_pane.style.maximal_height = 500
 
   ui.create_registered_tabbed_pane(tabbed_pane, player)
+  ui.reopen_tabbed_pane(1, player)
 
-  ui.player_storage(player).ui_frame = frame
+  return frame
 end
 
 function ui.player_storage(player)
@@ -131,24 +166,26 @@ end
 
 function ui.toggle_main_frame_visible(event)
   local player = game.players[event.player_index]
-  ui.set_main_frame_visible(player, player.gui.screen[frame_cfg.frame_name] == nil)
+  local visible = true
+  if player.gui.screen[frame_cfg.frame_name] then
+    visible = not player.gui.screen[frame_cfg.frame_name].visible
+  end
+  ui.set_main_frame_visible(player, visible)
 end
 
 function ui.set_main_frame_visible(player, visible)
   if not player then return end
-
+  local ui_frame = player.gui.screen[frame_cfg.frame_name]
   if (visible) then
-    if not (player.character and player.character.valid) then
-      return
+    if ui_frame == nil then
+      ui_frame = ui.create_frame(player)
     end
-    ui.create_frame(player)
+    ui_frame.visible = true
   else
-    local ui_frame = ui.player_storage(player).ui_frame
     if ui_frame == nil then
       return
     end
-    ui_frame.destroy()
-    ui.player_storage(player).ui_frame = nil
+    ui_frame.visible = false
   end
 end
 
@@ -166,6 +203,33 @@ function ui.on_gui_click(event)
   elseif element.name == "bnt_close_uiframe" then
     ui.set_main_frame_visible(player, false)
   end
+end
+
+function ui.on_gui_selected_tab_changed(event)
+  local element = event.element
+  if not (element and element.valid) then return end
+  local player = game.players[event.player_index]
+  if not (player) then return end
+
+  if element.name == "main-tabbed-pane" then
+    LogI("ui.on_gui_selected_tab_changed:", { name = element.name, type = element.type, selected_tab_index = element.selected_tab_index })
+    ui.reopen_tabbed_pane(element.selected_tab_index, player)
+  end
+end
+
+function ui.on_player_joined_game(event)
+  local player = game.players[event.player_index]
+  if not (player) then return end
+  ui.create_main_float_frame(player)
+  ui.create_frame(player)
+end
+
+function ui.on_player_left_game(event)
+  local player = game.players[event.player_index]
+  if not (player) then return end
+
+  ui.destory_main_float_frame(player)
+  ui.destory_main_frame(player)
 end
 
 return ui

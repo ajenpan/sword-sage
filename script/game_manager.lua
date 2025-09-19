@@ -40,10 +40,12 @@ local function on_init(event)
   g_tm.on_init()
   g_pf.on_init()
   g_mg.on_init()
+  g_pm.on_init()
 end
 
 local function init_gui()
   g_ui.on_init()
+
   g_ui.register_tabbed_pane("profile", "角色", g_pf.create_profile_pane)
   g_ui.register_tabbed_pane("teaminfo", "门派", g_tm.create_gui_pane)
   g_ui.register_tabbed_pane("teamrank", "门派榜", g_trank.create_team_rank_pane)

@@ -111,4 +111,6 @@ script.on_event(defines.events.on_console_chat, function (event)
   if player.force.name ~= game.forces.player.name then
     game.forces.player.print(custom_message, { color = player.color })
   end
+
+  LogI("player talk", { player = player.name, msg = event.message })
 end)

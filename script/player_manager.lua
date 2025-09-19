@@ -1,12 +1,17 @@
 local pm = {}
 
+
+function pm.on_init()
+
+end
+
 function pm.has_team(player)
   return (player.force.name ~= "player")
 end
 
 function pm.on_player_joined_game(event)
   local player = game.players[event.player_index]
-  if not (player and player.character and player.character.valid) then return end
+  if not (player) then return end
   -- update player title
   player.tag = g_pf.get_player_title(g_pf.get_player_ascension_cnt(player))
   local playername = g_utils.markup_wrap("color", "#00ffff")(player.name)
@@ -18,15 +23,12 @@ function pm.on_player_joined_game(event)
     game.print(string.format("欢迎道友 %s 光临星域", playername))
     player.print("▶点击左上角[color=#F72121]剑标[/color]打开面板查看指南")
   end
-
-  g_ui.set_main_frame_visible(player, false)
-  g_ui.create_main_float_frame(player)
 end
 
 function pm.on_player_join_team(event)
   local player = game.players[event.player_index]
 
-  if not (player and player.character and player.character.valid) then
+  if not (player) then
     return
   end
 
@@ -44,7 +46,11 @@ function pm.on_player_join_team(event)
   player.insert({ name = "steel-furnace", count = 50 })
   player.insert({ name = "assembling-machine-3", count = 50 })
   player.insert({ name = "substation", count = 5 })
+  player.insert({ name = "fast-inserter", count = 50 })
+  player.insert({ name = "electric-mining-drill", count = 50 })
+
   player.insert({ name = "automation-science-pack", count = 200 })
+  player.insert({ name = "logistic-science-pack", count = 200 })
 
   player.insert({ name = "construction-robot", count = 50, quality = "legendary" })
   player.insert({ name = "solar-panel", count = 2, quality = "legendary" })
