@@ -46,12 +46,25 @@ if not SwordSageDebugMod then
     local player = game.get_player(event.player_index)
     if not player then return end
 
+    local teaminfo = g_tm.get_team_info(player)
+    if not teaminfo then return end
+
     -- 获取蓝图实体
     local blueprint = player.blueprint_to_setup
     if not blueprint or not blueprint.valid_for_read then
       blueprint = player.cursor_stack
     end
     if not blueprint or not blueprint.valid_for_read then return end
+
+    local center_pos = g_mg.get_bounding_box_center(event.area.left_top, event.area.right_bottom)
+
+    -- 如果蓝图不在自己区域
+    local is_in_team_area = g_tm.is_in_team_area(teaminfo, event.surface.name, center_pos)
+    if not is_in_team_area then
+      blueprint.clear_blueprint()
+      player.print("▣ 不能复制其他门派的建筑作为蓝图")
+      return
+    end
 
     -- 获取选择的区域内的实体
     local entities = event.mapping.get()
@@ -66,6 +79,21 @@ if not SwordSageDebugMod then
         player.print(string.format("▣ 不能复制其他门派的建筑作为蓝图[gps=%d,%d,%s] ▣ %s", entity.position.x, entity.position.y,
           entity.surface.name, player.name))
         return
+      end
+    end
+  end)
+
+  script.on_event(defines.events.on_player_flipped_entity, function (event)
+    local player = game.get_player(event.player_index)
+    local entity = event.entity
+
+    if player and entity and entity.valid then
+      -- 检查是否为其他势力的建筑
+      if entity.force ~= player.force then
+        -- entity.mirroring = not entity.mirroring
+        -- 提示玩家
+        player.print(string.format("▣ 不能翻转其他门派的建筑[gps=%d,%d,%s] ▣ %s", entity.position.x, entity.position.y,
+          entity.surface.name, player.name))
       end
     end
   end)
@@ -112,20 +140,21 @@ if not SwordSageDebugMod then
   -- 监听玩家复制实体设置事件
   script.on_event(defines.events.on_entity_settings_pasted, function (event)
     local player = game.get_player(event.player_index)
-    local source = event.source           -- 复制源
+    local source = event.source         -- 复制源
     local destination = event.destination -- 粘贴目标
 
-    if player and destination and destination.valid then
-      -- 检查目标实体是否属于其他势力
-      if destination.force ~= player.force then
-        -- 提示玩家
-        player.print(string.format("▣ 不能通过复制设置修改其他门派设施[gps=%d,%d,%s] ▣ %s", destination.position.x,
-          destination.position.y,
-          destination.surface.name, player.name))
-        game.print(string.format("▣ %s已被杀死，大家不要学他 ▣", player.name))
-        -- 杀死这样操作的玩家
-        player.character.die()
-      end
+    if not (player and player.character and destination and destination.valid) then
+      return
+    end
+    -- 检查目标实体是否属于其他势力
+    if source.force ~= player.force or destination.force ~= player.force then
+      -- 提示玩家
+      player.print(string.format("▣ 不能通过复制设置修改其他门派设施[gps=%d,%d,%s] ▣ %s", destination.position.x,
+        destination.position.y,
+        destination.surface.name, player.name))
+      game.print(string.format("▣ %s已被杀死,大家不要学他 ▣", player.name))
+      -- 杀死这样操作的玩家
+      player.character.die()
     end
   end)
 
@@ -134,8 +163,7 @@ if not SwordSageDebugMod then
   script.on_event(defines.events.on_robot_built_entity, function (event)
     local entity = event.entity
     -- tm.destroy_radar(entity)
-
-    if not tm.is_in_force_area(entity) then
+    if not tm.is_entity_in_team_area(entity) then
       entity.destroy()
     end
   end)
@@ -145,13 +173,43 @@ if not SwordSageDebugMod then
     local player = game.get_player(event.player_index)
     if not player then return end
     local entity = event.entity
-    -- tm.destroy_radar(entity)
-
-    if not tm.is_in_force_area(entity) then
+    if entity and not tm.is_entity_in_team_area(entity) then
+      -- 蓝图也会限制, 蓝图是 entity_ghost
       player.print("▣ 不能在此区域创建实体 ▣" .. player.name)
       entity.destroy()
     end
   end)
-end
 
+  -- 玩家移动时调用
+  script.on_event(defines.events.on_player_changed_position, function (event)
+    local player = game.get_player(event.player_index)
+
+    if not player or not player.character then return end
+    if player.controller_type ~= defines.controllers.character then return end        -- 不是玩家
+    if player.physical_controller_type ~= defines.controllers.character then return end -- 不是玩家
+
+    -- 检查玩家包裹是否为空或者只有1个物品(穿了衣服)
+    if player.get_item_count() <= 1 then
+      return
+    end
+
+    -- 在飞船
+    if player.cargo_pod ~= nil then
+      return
+    end
+
+    -- 太空中
+    if player.hub ~= nil then
+      return
+    end
+
+    if not g_tm.is_entity_in_team_area(player.character) then
+      local teaminfo = tm.get_team_info(player)
+      if teaminfo then
+        player.print("玩家不在门派区域,即将传送回城")
+        player.teleport(teaminfo.spawn_position, player.surface)
+      end
+    end
+  end)
+end
 return restrict

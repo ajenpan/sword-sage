@@ -15,7 +15,7 @@ local pf = {}
 
 function pf.exp_required(level)
   local base = 2000
-  local growth = 1.2
+  local growth = 1.1
   return math.floor(base * (level ^ growth))
 end
 

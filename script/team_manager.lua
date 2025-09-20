@@ -17,7 +17,7 @@ end
 function tm.is_team_name_exist(name)
   local teams = tm.all_team_info()
   for _, team in pairs(teams) do
-    if team.team_name == name then
+    if team.name == name then
       return true
     end
   end
@@ -175,7 +175,7 @@ local function create_team_force(player, team_name)
 
   local team_id = get_new_team_id()
 
-  local pos = mg.get_team_area_pos(team_id)
+  local pos, left_top, right_bottom = mg.get_team_area_pos(team_id)
   local is_chunk_generated = mg.is_team_area_chunk_generated(pos)
   if is_chunk_generated then
     mg.create_team_area(force, pos)
@@ -194,6 +194,8 @@ local function create_team_force(player, team_name)
   teaminfo.name = team_name
   teaminfo.force_index = force.index
   teaminfo.spawn_position = pos
+  teaminfo.area_left_top = left_top
+  teaminfo.area_right_bottom = right_bottom
   teaminfo.level = ascension_cnt
   teaminfo.allow_others_join = false
   teaminfo.spawn_surface_name = spawn_surface
@@ -323,6 +325,14 @@ function tm.on_player_joined_game(event)
   local player = game.players[event.player_index]
   if (player == nil) then return end
   update_team_online_sate(player)
+
+  local teaminfo = tm.get_team_info(player)
+  if teaminfo == nil then return end
+
+
+  if teaminfo.area_left_top == nil then
+    teaminfo.area_left_top, teaminfo.area_right_bottom = g_mg.get_bounding_box_pos(teaminfo.spawn_position, g_mg.vaild_team_area)
+  end
 end
 
 function tm.on_player_left_game(event)
@@ -398,59 +408,21 @@ function tm.on_10_minute(event)
   end
 end
 
--- 检测是否在自己区域
-function tm.is_in_force_area(entity)
-  return true
-  -- if not entity.valid then return true end
-  -- local check_surfaces = { "nauvis", "fulgora", "vulcanus", "gleba", "aquilo" }
-  -- local is_check = false
-  -- for _, surface_name in pairs(check_surfaces) do
-  --   if entity.surface.name == surface_name then
-  --     is_check = true
-  --     break
-  --   end
-  -- end
-  -- if not is_check then
-  --   return true
-  -- end
-
-  -- -- todo:
-  -- local force = entity.force
-  -- local forceInfo = storage.forceInfos[force.name]
-  -- if forceInfo then
-  --   local respawn_pos = forceInfo.spawn_position
-  --   if entity.position.x >= respawn_pos.x - map_info.size / 2 and entity.position.x < respawn_pos.x + map_info.size / 2 and entity.position.y >= respawn_pos.y - map_info.size / 2 and entity.position.y < respawn_pos.y + map_info.size / 2 then
-  --     return true
-  --   end
-  -- end
-  -- return false
+function tm.is_entity_in_team_area(entity)
+  if not entity.valid then return true end
+  local teaminfo = tm.get_team_info_by_index(entity.force.index)
+  if not teaminfo then return true end
+  return tm.is_in_team_area(teaminfo, entity.surface.name, entity.position)
 end
 
--- 玩家移动时调用
-script.on_event(defines.events.on_player_changed_position, function (event)
-  local player = game.get_player(event.player_index)
-
-  -- TODO:
-  if not player or not player.character then return end
-  if player.controller_type ~= defines.controllers.character then return end          -- 不是玩家
-  if player.physical_controller_type ~= defines.controllers.character then return end -- 不是玩家
-  if player.admin then return end
-
-  -- 检查玩家包裹是否为空或者只有1个物品(穿了衣服)
-  if player.get_item_count() <= 1 then
-    return
+-- 检测是否在自己区域
+function tm.is_in_team_area(teaminfo, surface, pos)
+  local check_surfaces = { ["nauvis"] = true, ["fulgora"] = true, ["vulcanus"] = true, ["gleba"] = true, ["aquilo"] = true }
+  if not check_surfaces[surface] then
+    return true
   end
-
-  if not tm.is_in_force_area(player.character) then
-    local team_info = tm.get_team_info_by_index(player.force.index)
-    local spawn_surface = team_info and game.surfaces[team_info.spawn_surface_name] or nil
-    if team_info and spawn_surface then
-      player.print("▣ 你已离开门派区域，将被传送回门派出生点 ▣")
-      player.teleport(team_info.spawn_position, spawn_surface)
-    end
-  end
-end)
-
+  return g_mg.is_in_boundingbox(pos, teaminfo.area_left_top, teaminfo.area_right_bottom)
+end
 
 function tm.on_gui_checked_state_changed(event)
   local element = event.element
@@ -533,7 +505,7 @@ function tm.create_gui_pane(frame, player)
   )
 
   uih.add(pane, { type = "line" })
-  uih.add(pane, { type = "label", caption = "门派最大离线时间:" .. team_info.max_lifespan / TICKS_PER_HOUR .. "小时,(在线1小时加10分钟,每次飞升加12小时,科研加6个小时,最长不超过500小时)" })
+  uih.add(pane, { type = "label", caption = "门派最大离线时间:" .. team_info.max_lifespan / TICKS_PER_HOUR .. "小时,(在线1小时加10分钟,每次飞升加12小时,科研临时加6个小时,最长不超过500小时)" })
   uih.add(pane, { type = "line" })
   uih.add(pane, { type = "label", caption = "成员列表: (待开发中)" })
 end

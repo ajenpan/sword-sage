@@ -1,17 +1,17 @@
 local ShopItems = {
   ["equipment"] = {
-    { target_item = { name = "mech-armor", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "fusion-reactor-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "battery-mk3-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "toolbelt-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "personal-roboport-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "exoskeleton-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "energy-shield-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "personal-laser-defense-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e5, } },
+    { target_item = { name = "mech-armor", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "fusion-reactor-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "battery-mk3-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "toolbelt-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "personal-roboport-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "exoskeleton-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "energy-shield-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "personal-laser-defense-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
   },
   ["vehicle"] = {
-    { target_item = { name = "spidertron", count = 1, quality = "normal", }, price_item = { name = "coin", count = 1e5, } },
-    { target_item = { name = "spidertron", count = 1, quality = "legendary", }, price_item = { name = "coin", count = 1e5, } },
+    { target_item = { name = "spidertron", count = 1, quality = "normal", }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "spidertron", count = 1, quality = "legendary", }, price_item = { name = "coin", count = 1e3, } },
   }
 }
 
@@ -84,9 +84,9 @@ function shop.create_shop_pane(frame, player)
   end
   storage.shop.gui_root = frame
 
-
   g_uih.add(frame, { type = "line" })
-
+  g_uih.add(frame, { type = "label", caption = "提示: 金币在镇妖塔掉落" })
+  g_uih.add(frame, { type = "line" })
   -- local wallet = player_inv.get_item_count("coin")
   -- g_uih.add(frame, { type = "label", caption = "拥有金币:" .. wallet .. "[item=coin]", style_table = { top_margin = 5, bottom_margin = 5 } })
 

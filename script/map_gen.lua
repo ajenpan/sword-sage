@@ -94,6 +94,24 @@ local function get_chunk_pos(left_top, right_bottom)
   return ret
 end
 
+local function bounding_boxes_intersect(a, b)
+  return not (
+    a.right_bottom.x <= b.left_top.x or -- A 在 B 左边
+    a.left_top.x >= b.right_bottom.x or -- A 在 B 右边
+    a.right_bottom.y <= b.left_top.y or -- A 在 B 上方
+    a.left_top.y >= b.right_bottom.y    -- A 在 B 下方
+  )
+end
+
+local function get_bounding_box_center(left_top, right_bottom)
+  local x = (left_top.x + right_bottom.x) / 2
+  local y = (left_top.y + right_bottom.y) / 2
+  return { x = x, y = y }
+end
+
+local max_team_area_size = { x = 32 * 6, y = 32 * 6 } -- include out-of-map tite
+local vaild_team_area = { x = 32 * 4, y = 32 * 4 }
+
 local mg = {}
 
 mg.add_pos = add_pos
@@ -101,9 +119,10 @@ mg.mul_pos = mul_pos
 mg.get_bounding_box_pos = get_bounding_box_pos
 mg.is_in_boundingbox = is_in_boundingbox
 mg.get_chunk_pos = get_chunk_pos
-
-local max_team_area_size = { x = 32 * 6, y = 32 * 6 } -- include out-of-map tite
-local vaild_team_area = { x = 32 * 4, y = 32 * 4 }
+mg.bounding_boxes_intersect = bounding_boxes_intersect
+mg.get_bounding_box_center = get_bounding_box_center
+mg.max_team_area_size = max_team_area_size
+mg.vaild_team_area = vaild_team_area
 
 function mg.on_second(event)
   if (storage.map_gen_init ~= nil) then
@@ -239,7 +258,8 @@ end
 function mg.get_team_area_pos(team_index)
   local pos, ring = spiral_coord(team_index)
   pos.x, pos.y = pos.x * max_team_area_size.x, pos.y * max_team_area_size.y
-  return pos
+  local left_top, right_bottom = get_bounding_box_pos(pos, vaild_team_area)
+  return pos, left_top, right_bottom
 end
 
 function mg.is_area_chunk_generated(surface, left_top, right_bottom)
@@ -495,17 +515,19 @@ function mg.create_team_gleba_area(force, center_pos, left_top, right_bottom)
     for x = -8, 7 do
       for y = -8, 7 do
         local newpos = add_pos(pos, { x = x, y = y })
-        local name = "wetland-blue-slime"
+        local name = "wetland-green-slime"
         if newpos.x < center_pos.x then
-          name = "wetland-green-slime"
+          name = "wetland-red-tentacle"
         end
         surface.set_tiles({ { name = name, position = newpos } })
       end
     end
   end)
 
-  mg.create_rect_edge_pos(vaild_area_left_top, vaild_area_right_bottom, { x = 5, y = 5 }, { x = 2, y = 2 }, function (pos)
-    surface.create_entity{ name = "gleba-spawner", position = pos, force = force }
+  mg.create_rect_edge_pos(vaild_area_left_top, vaild_area_right_bottom, { x = 5, y = 5 }, { x = 2, y = 2 }, function (pos, edge)
+    if edge == "top" then
+      surface.create_entity{ name = "gleba-spawner", position = pos, force = force }
+    end
   end)
 
   mg.create_rect_edge_pos(add_pos(vaild_area_left_top, { x = 8, y = 8 }), add_pos(vaild_area_right_bottom, { x = -8, y = -8 }), { x = 3, y = 3 }, { x = 5, y = 5 }, function (pos)
@@ -570,7 +592,7 @@ function mg.create_team_aquilo_area(force, center_pos, left_top, right_bottom)
   end)
 
   -- create oil-ocean-shallow
-  local vent_area_left_top, vent_area_right_buttom = get_bounding_box_pos(center_pos, { x = 64, y = 64 })
+  local vent_area_left_top, vent_area_right_buttom = get_bounding_box_pos(center_pos, { x = 62, y = 64 })
   mg.create_rect_edge_pos(vent_area_left_top, vent_area_right_buttom, { x = 3, y = 3 }, 0, function (pos, edge)
     if edge == "left" then
       surface.create_entity({ name = "lithium-brine", position = pos, amount = 300000000, })
