@@ -396,7 +396,7 @@ function tm.on_second(event)
 end
 
 function tm.on_minute(event)
-
+  log("online player cnt:" .. #game.connected_players)
 end
 
 function tm.on_10_minute(event)
@@ -433,7 +433,7 @@ function tm.on_gui_checked_state_changed(event)
       return
     end
 
-    team_info.allow_join_checkbox_state = element.state
+    team_info.allow_others_join = element.state
     if element.state then
       game.print(string.format("门派 [color=#ffff00]%s[/color] 开始招收弟子", team_info.name))
     else
@@ -529,16 +529,6 @@ function tm.get_technology_score(force)
     end
   end
   return score
-end
-
-function tm.get_online_players(force)
-  local players = {}
-  for _, player in pairs(force.players) do
-    if player.connected then
-      players[#players + 1] = player
-    end
-  end
-  return players
 end
 
 function tm.on_click_create_team_confirm_btn(event)

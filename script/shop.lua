@@ -1,17 +1,17 @@
 local ShopItems = {
   ["equipment"] = {
-    { target_item = { name = "mech-armor", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "fusion-reactor-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "battery-mk3-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "toolbelt-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "personal-roboport-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "exoskeleton-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "energy-shield-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "personal-laser-defense-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "mech-armor", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "fusion-reactor-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "battery-mk3-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "toolbelt-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "personal-roboport-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "exoskeleton-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "energy-shield-mk2-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "personal-laser-defense-equipment", count = 1, quality = "legendary" }, price_item = { name = "coin", count = 3 * 1e3, } },
   },
   ["vehicle"] = {
-    { target_item = { name = "spidertron", count = 1, quality = "normal", }, price_item = { name = "coin", count = 1e3, } },
-    { target_item = { name = "spidertron", count = 1, quality = "legendary", }, price_item = { name = "coin", count = 1e3, } },
+    { target_item = { name = "spidertron", count = 1, quality = "normal", }, price_item = { name = "coin", count = 3 * 1e3, } },
+    { target_item = { name = "spidertron", count = 1, quality = "legendary", }, price_item = { name = "coin", count = 3 * 1e3, } },
   }
 }
 

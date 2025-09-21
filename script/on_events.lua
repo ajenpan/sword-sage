@@ -1,6 +1,6 @@
 local coins = require("script.coins")
 local player_restrict = require("script.player_restrict")
-
+local chart = require("script.chart")
 -- node: 由于'Each mod can only register once for every event', 所以需要一个集中注册点,在把事件分发到各个模块
 
 LogI("start to init on_events.lua")
@@ -126,6 +126,10 @@ script.on_nth_tick(60, function (event)
   g_tm.on_second(event)
   g_fight_area.on_second(event)
   g_mg.on_second(event)
+end)
+
+script.on_nth_tick(60 * 10, function (event)
+  chart.on_10_second(event)
 end)
 
 -- 1 minute

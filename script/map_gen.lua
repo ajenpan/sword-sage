@@ -145,7 +145,7 @@ function mg.on_second(event)
         surface.map_gen_settings = setting
         surface.peaceful_mode = true
         surface.no_enemies_mode = true
-        surface.always_day = true
+        -- surface.always_day = true
         -- LogI("map_gen_settings:", { setting = surface.map_gen_settings, name = planet.name })
       end
     elseif step == 2 then

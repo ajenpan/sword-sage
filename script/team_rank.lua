@@ -43,10 +43,15 @@ local function create_team_rank_pane(frame, player)
 
     if force then
       local tech_score = g_tm.get_technology_score(force)
-      local online_players = g_tm.get_online_players(force)
 
       tech_score = tech_score * (team_level + 1) / 2 * team_level
       local tech_scorestr = utils.format_dd_count(tech_score)
+
+      -- TODO: remove after v0.1.12
+      if team_info.allow_join_checkbox_state then
+        team_info.allow_others_join = team_info.allow_join_checkbox_state
+        team_info.allow_join_checkbox_state = nil
+      end
 
       table.insert(force_techs, {
         name = team_info.name,
@@ -57,6 +62,8 @@ local function create_team_rank_pane(frame, player)
         tech_score = tech_score,
         allow_join = team_info.allow_others_join,
       })
+    else
+      LogE("team disconnect forse", team_info)
     end
   end
 
@@ -80,7 +87,7 @@ local function create_team_rank_pane(frame, player)
   tab.add{ type = "label", caption = "境界" }.style.width = 110
   tab.add{ type = "label", caption = "人数(" .. #game.connected_players .. "/" .. #game.players .. ")" }.style.width = 80
   tab.add{ type = "label", caption = "加入门派" }.style.width = 80
-  tab.add{ type = "label", caption = "仙舟" }.style.width = 100
+  tab.add{ type = "label", caption = "仙舟" }.style.width = 80
 
   for rank, item in ipairs(force_techs) do
     -- 排名
