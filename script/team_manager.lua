@@ -219,13 +219,13 @@ local function create_team_force(player, team_name)
   tm.unlock_tech_by_ascension(player)
 
   -- bonus
-  force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + ascension_cnt * 0.1     -- RW double	
-  force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + ascension_cnt * 0.1 -- RW double	
-  force.laboratory_speed_modifier = force.laboratory_speed_modifier + ascension_cnt * 0.1           -- RW double	
-  force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + ascension_cnt * 0.1   -- RW double	
-  force.worker_robots_speed_modifier = force.worker_robots_speed_modifier + ascension_cnt * 0.1     -- RW double	
-  force.worker_robots_battery_modifier = force.worker_robots_battery_modifier + ascension_cnt * 0.1 -- RW double	
-  force.worker_robots_storage_bonus = force.worker_robots_storage_bonus + ascension_cnt * 0.1       -- RW double	
+  force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + ascension_cnt * 0.1     -- RW double
+  force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + ascension_cnt * 0.1 -- RW double
+  force.laboratory_speed_modifier = force.laboratory_speed_modifier + ascension_cnt * 0.1           -- RW double
+  force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + ascension_cnt * 0.1   -- RW double
+  force.worker_robots_speed_modifier = force.worker_robots_speed_modifier + ascension_cnt * 0.1     -- RW double
+  force.worker_robots_battery_modifier = force.worker_robots_battery_modifier + ascension_cnt * 0.1 -- RW double
+  force.worker_robots_storage_bonus = force.worker_robots_storage_bonus + ascension_cnt * 0.1       -- RW double
 
   if is_chunk_generated then
     player.print("传送到[gps=" .. pos.x .. "," .. pos.y .. "]")
@@ -458,8 +458,9 @@ function tm.create_gui_pane(frame, player)
   local team_info = tm.get_team_info_by_index(player.force_index)
   local has_team = (team_info ~= nil)
   local is_team_owner = team_info and team_info.owner_player_index == player.index or false
+  local force = player.force
 
-  local pane = uih.add(frame, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "never", style_table = { padding = { 5, 0, 5, 10 } } })
+  local pane = uih.add(frame, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "never", style_table = { horizontally_stretchable = true, padding = { 5, 0, 5, 10 } } })
 
   if not has_team then
     local flow = uih.add(pane, { type = "flow", horizontal_scroll_policy = "never", vertical_scroll_policy = "auto-and-reserve-space" })
@@ -494,28 +495,46 @@ function tm.create_gui_pane(frame, player)
       { type = "button", caption = "退出门派", name = "tm.btn_leave_team_btn", on_click = tm.on_click_leave_team_btn, visible = has_team, style_table = { minimal_width = 20 } }
     }
   )
+  uih.add(pane, { type = "line" })
+  uih.add(pane, {
+    type = "label",
+    caption = "门派最大离线时间:" .. g_utils.markup_wrap("color", g_utils.colors_hex.red)(team_info.max_lifespan / TICKS_PER_HOUR) ..
+        "小时,(在线1小时加10分钟,每次飞升加12小时,科研临时加6个小时,最长不超过500小时)"
+  })
 
   uih.add(pane, { type = "line" })
 
-  -- uih.add(
-  --   uih.add(pane, { type = "flow", direction = "horizontal", style_table = { vertical_align = "center" } }),
-  --   { { type = "label", caption = "飞升" }, { type = "line" } }
-  -- )
+  -- uih.add(pane, {type = "label" , caption =""})
+  uih.add(pane, { type = "label", caption = "掌门等级大于10,到达星系边缘[space-location=solar-system-edge]可解锁飞升." })
+  uih.add(pane, { type = "label", caption = "飞升会祭献门派,弟子万千仅掌门可得道" })
+  uih.add(pane, { type = "label", caption = "仙舟枢纽[item=space-platform-hub]内前" .. g_utils.markup_wrap("color", g_utils.colors_hex.red)(tm.get_ascension_take_item_cnt(team_info.level)) .. "格物品可被转生者带走" })
 
   uih.add(
     uih.add(pane, { type = "flow", direction = "horizontal" }),
     {
-      { type = "label", caption = "掌门等级大于10,到达星系边缘[space-location=solar-system-edge]可解锁飞升", style_table = { font = "font_default_18" } },
       { type = "flow", direction = "horizontal", style_table = { horizontally_stretchable = true } },
       { type = "flow", direction = "horizontal", style_table = { horizontal_align = "right", width = 200 } },
       { type = "button", caption = "门派飞升", name = "tm.btn_team_ascension", on_click = tm.on_click_ascension_confirm_btn, enabled = (profile.level >= 10 and is_team_owner), style_table = { minimal_width = 20 } }
     }
   )
 
+
   uih.add(pane, { type = "line" })
-  uih.add(pane, { type = "label", caption = "门派最大离线时间:" .. team_info.max_lifespan / TICKS_PER_HOUR .. "小时,(在线1小时加10分钟,每次飞升加12小时,科研临时加6个小时,最长不超过500小时)" })
+
+
+  uih.add(pane, { type = "label", caption = "门派加成:" })
+
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.manual_mining_speed_modifier", force.manual_mining_speed_modifier } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.manual_crafting_speed_modifier", force.manual_crafting_speed_modifier } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.laboratory_speed_modifier", force.laboratory_speed_modifier } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.laboratory_productivity_bonus", force.laboratory_productivity_bonus } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.worker_robots_speed_modifier", force.worker_robots_speed_modifier } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.worker_robots_battery_modifier", force.worker_robots_battery_modifier } } })
+  uih.add(uih.add(pane, { type = "flow", direction = "horizontal" }), { { type = "label", caption = { "tm.bonus.worker_robots_storage_bonus", force.worker_robots_storage_bonus } } })
+
   uih.add(pane, { type = "line" })
-  uih.add(pane, { type = "label", caption = "成员列表: (待开发中)" })
+
+  -- uih.add(pane, { type = "label", caption = "成员列表: (待开发中)" })
 end
 
 function tm.on_gui_click(event)
@@ -638,6 +657,11 @@ function tm.on_click_ascension_confirm_btn(event)
   tm.do_ascension(player)
 end
 
+function tm.get_ascension_take_item_cnt(ascension_cnt)
+  if not ascension_cnt or ascension_cnt < 1 then ascension_cnt = 1 end
+  return ascension_cnt * 2
+end
+
 function tm.do_ascension(player)
   if not (player and player.character and player.character.valid) then
     return
@@ -667,7 +691,7 @@ function tm.do_ascension(player)
 
   player.tag = g_pf.get_player_title(g_pf.get_player_ascension_cnt(player))
 
-  local count = profile.ascension_cnt * 2
+  local take_cnt = tm.get_ascension_take_item_cnt(profile.ascension_cnt)
   local spawn_surface = teaminfo.spaspawn_surface_name
   player.force = game.forces.player
 
@@ -701,7 +725,7 @@ function tm.do_ascension(player)
   if player.character.surface.platform ~= nil then
     -- 将trash的前count格物品插入玩家背包
     local trash = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
-    for i = 1, count do
+    for i = 1, take_cnt do
       if trash[i].valid_for_read then
         -- 获取物品堆栈
         local stack = trash[i]

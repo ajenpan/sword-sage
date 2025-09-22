@@ -109,22 +109,22 @@ function pf.update_ap_effect(player)
   local profile = pf.player_profile(player)
   for attrib, v in pairs(profile.assigned_ap) do
     if attrib == "CON" then
-      player.character_health_bonus = player.character_health_bonus + 100 * v
+      player.character_health_bonus = 100 * v
     elseif attrib == "SPI" then
-      player.character_resource_reach_distance_bonus = player.character_resource_reach_distance_bonus + 1 * v
-      player.character_reach_distance_bonus = player.character_reach_distance_bonus + 1 * v
-      player.character_item_drop_distance_bonus = player.character_item_drop_distance_bonus + 1 * v
-      player.character_build_distance_bonus = player.character_build_distance_bonus + 1 * v
-      player.character_item_pickup_distance_bonus = player.character_item_pickup_distance_bonus + 1 * v
-      player.character_loot_pickup_distance_bonus = player.character_loot_pickup_distance_bonus + 1 * v
+      player.character_resource_reach_distance_bonus = 1 * v
+      player.character_reach_distance_bonus = 1 * v
+      player.character_item_drop_distance_bonus = 1 * v
+      player.character_build_distance_bonus = 1 * v
+      player.character_item_pickup_distance_bonus = 1 * v
+      player.character_loot_pickup_distance_bonus = 1 * v
     elseif attrib == "DEX" then
-      player.character_running_speed_modifier = player.character_running_speed_modifier + 0.2 * v
+      player.character_running_speed_modifier = 0.2 * v
     elseif attrib == "STR" then
-      player.character.character_inventory_slots_bonus = player.character.character_inventory_slots_bonus + 5 * v
-      player.character_mining_speed_modifier = player.character_mining_speed_modifier + 0.1 * v
+      player.character_inventory_slots_bonus = 5 * v
+      player.character_mining_speed_modifier = 0.1 * v
     elseif attrib == "INT" then
-      player.character_crafting_speed_modifier = player.character_crafting_speed_modifier + 0.1 * v
-      player.character_maximum_following_robot_count_bonus = player.character_maximum_following_robot_count_bonus + 1 * v
+      player.character_crafting_speed_modifier = 0.1 * v
+      player.character_maximum_following_robot_count_bonus = 1 * v
     end
   end
 end
@@ -135,21 +135,22 @@ function pf.create_profile_pane(frame, player)
   local profile = pf.player_profile(player)
   profile.gui_root = frame
 
+  -- local frame = uih.add(root, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "never", style_table = { padding = { 5, 0, 5, 10 } } })
+
   local lv = profile.level
   local hp = math.ceil(player.character.health)
   local xp = profile.xp
   local usable_ap = profile.usable_ap
-
+  local ascension_cnt = profile.ascension_cnt
   local ptime = player.online_time
   local timestr = string.format("%d:%02d:%02d", math.floor(ptime / 216000), math.floor(ptime / 3600) % 60, math.floor(ptime / 60) % 60)
 
   uih.add(frame, { type = "line" })
 
-  local tabChar = uih.add(frame, { type = "table", column_count = 2 })
-  local profile_pane = uih.add(tabChar, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "auto", style_table = { padding = { -5, 0, 5, 10 } } })
+  local profile_pane = uih.add(uih.add(frame, { type = "table", column_count = 2 }), { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "auto", style_table = { padding = { -5, 0, 5, 10 } } })
 
   uih.add(profile_pane, { type = "label", caption = player.name, style_table = { font = "font_default_bold_30" } })
-
+  uih.add(profile_pane, { type = "label", caption = "境界:" .. pf.get_player_raw_title(ascension_cnt), style_table = { font = "font_default_18" } })
   uih.add(profile_pane, { type = "label", caption = { "actual_lv", lv }, style_table = { font = "font_default_18" } })
   uih.add(profile_pane, { type = "label", caption = "经验: " .. util.format_number(xp) .. "/" .. util.format_number(pf.get_required_xp(lv)), style_table = { font = "font_default_18" } })
   uih.add(profile_pane, { type = "label", caption = "生命值: " .. util.format_number(hp), style_table = { font = "font_default_18" } })
@@ -178,7 +179,20 @@ function pf.create_profile_pane(frame, player)
       }
     )
   end
+
   frame.add{ type = "line" }
+  uih.add(frame, { type = "label", caption = "属性加成:" })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_health_bonus", player.character_health_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_reach_distance_bonus", player.character_reach_distance_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_item_drop_distance_bonus", player.character_item_drop_distance_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_build_distance_bonus", player.character_build_distance_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_item_pickup_distance_bonus", player.character_item_pickup_distance_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_loot_pickup_distance_bonus", player.character_loot_pickup_distance_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_running_speed_modifier", player.character_running_speed_modifier } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_inventory_slots_bonus", player.character_inventory_slots_bonus } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_mining_speed_modifier", player.character_mining_speed_modifier } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_crafting_speed_modifier", player.character_crafting_speed_modifier } })
+  uih.add(frame, { type = "label", caption = { "pf.bonus.character_maximum_following_robot_count_bonus", player.character_maximum_following_robot_count_bonus } })
 end
 
 function pf.on_player_get_xp(player, xp)
@@ -395,10 +409,8 @@ function pf.reflash_player_profile_gui(player)
   pf.create_profile_pane(guiroot, player)
 end
 
---
-function pf.get_player_title(ascension_cnt, with_bracket)
+function pf.get_player_raw_title(ascension_cnt)
   local title_list = { "凡人", "炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "大乘", "渡劫", "天仙", "真仙", "玄仙", "金仙", "太乙", "大罗", "仙君", "仙尊", "仙王", "仙帝" }
-  local color_list = { "#ffffff", "#33ff33", "#B7EF34", "#33BFFF", "#3100F4", "#ff33ff", "#ff3333", "#ffc0cb", "#ffd733", "#FD079F" }
   if not ascension_cnt or ascension_cnt <= 0 then
     ascension_cnt = 1
   end
@@ -410,14 +422,18 @@ function pf.get_player_title(ascension_cnt, with_bracket)
   else
     title = title_list[#title_list] .. g_utils.to_cn_num_str(ascension_cnt - max_title) .. "重"
   end
+  return title
+end
 
-  if with_bracket then
-    title = "【" .. with_bracket .. "】"
+--
+function pf.get_player_title(ascension_cnt, with_bracket)
+  local color_list = { "#ffffff", "#33ff33", "#B7EF34", "#33BFFF", "#3100F4", "#ff33ff", "#ff3333", "#ffc0cb", "#ffd733", "#FD079F" }
+  if not ascension_cnt or ascension_cnt <= 0 then
+    ascension_cnt = 1
   end
-
+  local title = pf.get_player_raw_title(ascension_cnt)
   local color_index = (math.abs(ascension_cnt) - 1) % #color_list + 1
   local color = color_list[color_index]
-
   local font = "default"
   if ascension_cnt >= 20 then
     font = "default-large-bold"

@@ -92,7 +92,11 @@ function utils.format_dd_count(dd_count)
   return dd_count
 end
 
-utils.colors = {
+utils.colors_hex = {
+  red = "#FF0000"
+}
+
+utils.colors_tab = {
   white = { r = 1, g = 1, b = 1 },
   black = { r = 0, g = 0, b = 0 },
   darkgrey = { r = 0.25, g = 0.25, b = 0.25 },

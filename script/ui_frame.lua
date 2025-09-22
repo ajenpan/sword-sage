@@ -31,7 +31,9 @@ function ui.create_note_pane(tabbed_pane, player)
   text = text .. "▶输入「捕猎」: 解锁[虫卵处理]科技 ,  并随机获得虫卵\n"
 
 
-  local textfield = tabbed_pane.add{ type = "text-box", text = text, }
+  local pane = uih.add(tabbed_pane, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "never", style_table = { horizontally_stretchable = true,padding = { 5, 0, 5, 10 } } })
+
+  local textfield = pane.add{ type = "text-box", text = text, }
   textfield.style.horizontally_stretchable = true
   textfield.style.vertically_stretchable = true
   textfield.read_only = true
@@ -119,24 +121,11 @@ function ui.create_frame(player)
   frame.force_auto_center()
   frame.visible = false
 
-  local title_flow = frame.add{ type = "flow", direction = "horizontal" }
-  title_flow.style.horizontally_stretchable = true
-  title_flow.style.horizontal_spacing = 8
-  title_flow.style.height = 24
-
-  title_flow.add{ type = "label", caption = frame_cfg.frame_caption, style = "frame_title" }.style.minimal_width = 28
-  local filler = title_flow.add{ type = "empty-widget", style = "draggable_space_header" }
-  filler.style.horizontally_stretchable = true
-  filler.style.size = { 600, 24 }
-  filler.drag_target = frame
-
-  uih.add(title_flow, {
-    name = "bnt_close_uiframe",
-    type = "sprite-button",
-    sprite = "utility/close_black",
-    style = "shortcut_bar_button",
-    style_table = { size = { 32, 24 } },
-  })
+  local title_flow = uih.add(frame, { type = "flow", direction = "horizontal", style_table = { horizontally_stretchable = true, horizontal_spacing = 8, height = 24 } })
+  uih.add(title_flow, { type = "label", caption = frame_cfg.frame_caption, style = "frame_title", style_table = { minimal_width = 28 } })
+  uih.add(title_flow, { type = "empty-widget", style = "draggable_space_header", style_table = { horizontally_stretchable = true, size = { 600, 24 } } }).drag_target = frame
+  uih.add(title_flow, { type = "flow", direction = "horizontal", style_table = { horizontal_align = "right", width = 30 } })
+  uih.add(title_flow, { type = "sprite-button", name = "bnt_close_uiframe", sprite = "utility/close_black", style = "shortcut_bar_button", style_table = { size = { 32, 24 } } })
 
   local tabbed_pane = frame.add{ type = "tabbed-pane", name = "main-tabbed-pane" }
   tabbed_pane.selected_tab_index = 1
