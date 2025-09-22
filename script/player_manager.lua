@@ -23,38 +23,56 @@ function pm.on_player_joined_game(event)
     game.print(string.format("欢迎道友 %s 光临星域", playername))
     player.print("▶点击左上角[color=#F72121]剑标[/color]打开面板查看指南")
   end
+
+  -- update ap effect
+  g_pf.update_ap_effect(player)
 end
 
 function pm.on_player_join_team(event)
   local player = game.players[event.player_index]
 
-  if not (player) then
-    return
-  end
+  if not (player) then return end
+
+  local surfacename = player.surface.name
 
   -- 设置角色属性
   -- 就不送了, 送 ap 点是不是比较好
   local ascension_cnt = g_pf.get_player_ascension_cnt(player)
   -- player.character_crafting_speed_modifier = modifier
   -- player.character_mining_speed_modifier = modifier
+  player.insert({ name = "vehicle-machine-gun", count = 1 })
 
   player.insert({ name = "wood", count = 100 })
-  player.insert({ name = "iron-plate", count = 100 })
-  player.insert({ name = "copper-plate", count = 100 })
-  player.insert({ name = "electronic-circuit", count = 100 })
+  player.insert({ name = "iron-plate", count = 200 })
+  player.insert({ name = "copper-plate", count = 200 })
+  player.insert({ name = "steel-plate", count = 200 })
+  player.insert({ name = "electronic-circuit", count = 200 })
   player.insert({ name = "iron-gear-wheel", count = 200 })
   player.insert({ name = "steel-furnace", count = 50 })
-  player.insert({ name = "assembling-machine-3", count = 50 })
-  player.insert({ name = "substation", count = 5 })
+  player.insert({ name = "pipe", count = 200 })
+  player.insert({ name = "substation", count = 20 })
   player.insert({ name = "fast-inserter", count = 50 })
+  player.insert({ name = "assembling-machine-3", count = 50 })
   player.insert({ name = "electric-mining-drill", count = 50 })
-
-  player.insert({ name = "automation-science-pack", count = 200 })
+  player.insert({ name = "automation-science-pack", count = 400 })
   player.insert({ name = "logistic-science-pack", count = 200 })
-
   player.insert({ name = "construction-robot", count = 50, quality = "legendary" })
-  player.insert({ name = "solar-panel", count = 2, quality = "legendary" })
-  player.insert({ name = "accumulator", count = 2, quality = "legendary" })
+  player.insert({ name = "solar-panel", count = 10, quality = "legendary" })
+  player.insert({ name = "accumulator", count = 10, quality = "legendary" })
+
+  if surfacename ~= "nauvis" then
+    player.insert({ name = "steam-turbine", count = 20 })
+    if surfacename == "vulcanus" then
+      player.insert({ name = "foundry", count = 1 })
+      player.insert({ name = "big-mining-drill", count = 1 })
+      player.insert({ name = "refined-concrete", count = 200 })
+    elseif surfacename == "fulgora" then
+
+    elseif surfacename == "gleba" then
+      player.insert({ name = "spoilage", count = 200 }) -- 变质物
+      player.insert({ name = "biochamber", count = 1 }) -- 生物工厂
+    end
+  end
 
   local armor_inv = player.get_inventory(defines.inventory.character_armor)
   if armor_inv and (armor_inv.is_empty() or not armor_inv[1].valid_for_read) then
@@ -63,6 +81,11 @@ function pm.on_player_join_team(event)
     -- player.insert{ name = "modular-armor", count = 1 }
 
     player.insert{ name = "power-armor-mk2", count = 1 }
+    local quality = "legendary"
+    player.insert{ name = "personal-roboport-equipment", count = 1, quality = quality }
+    player.insert{ name = "solar-panel-equipment", count = 2, quality = quality }
+    player.insert{ name = "battery-mk3-equipment", count = 1, quality = quality }
+
     armor_inv = player.get_inventory(defines.inventory.character_armor)
     if armor_inv == nil then
       return
@@ -72,11 +95,6 @@ function pm.on_player_join_team(event)
       player.print("无法获取装备栏，请检查")
       return
     end
-
-    local quality = "legendary"
-    player.insert{ name = "personal-roboport-equipment", count = 1, quality = quality }
-    player.insert{ name = "solar-panel-equipment", count = 2, quality = quality }
-
     -- p_armor.put({ name = "fusion-reactor-equipment", quality = quality })
     -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })
     -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })

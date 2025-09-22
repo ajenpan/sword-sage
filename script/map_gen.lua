@@ -526,7 +526,7 @@ function mg.create_team_gleba_area(force, center_pos, left_top, right_bottom)
 
   mg.create_rect_edge_pos(vaild_area_left_top, vaild_area_right_bottom, { x = 5, y = 5 }, { x = 2, y = 2 }, function (pos, edge)
     if edge == "top" then
-      surface.create_entity{ name = "gleba-spawner", position = pos, force = force }
+      surface.create_entity{ name = "gleba-spawner", position = pos, force = "enemy" }
     end
   end)
 

@@ -14,7 +14,7 @@ local Attributes = {
 local pf = {}
 
 function pf.exp_required(level)
-  local base = 2000
+  local base = 1000
   local growth = 1.1
   return math.floor(base * (level ^ growth))
 end
@@ -88,9 +88,6 @@ function pf.inc_player_ap(player, attrib, inc)
   end
 
   local profile = pf.player_profile(player)
-  if not (profile and profile.usable_ap >= inc) then
-    return
-  end
   local character = player.character
   if not (character and character.valid) then
     player.print("没有玩家实体, 加成无效")
@@ -105,24 +102,30 @@ function pf.inc_player_ap(player, attrib, inc)
   profile.assigned_ap[attrib] = profile.assigned_ap[attrib] + inc
 
   -- effect
+  pf.update_ap_effect(player)
+end
 
-  if attrib == "CON" then
-    character.character_health_bonus = character.character_health_bonus + 100 * inc
-  elseif attrib == "SPI" then
-    character.character_resource_reach_distance_bonus = character.character_resource_reach_distance_bonus + 1 * inc
-    character.character_reach_distance_bonus = character.character_reach_distance_bonus + 1 * inc
-    character.character_item_drop_distance_bonus = character.character_item_drop_distance_bonus + 1 * inc
-    character.character_build_distance_bonus = character.character_build_distance_bonus + 1 * inc
-    character.character_item_pickup_distance_bonus = character.character_item_pickup_distance_bonus + 1 * inc
-    character.character_loot_pickup_distance_bonus = character.character_loot_pickup_distance_bonus + 1 * inc
-  elseif attrib == "DEX" then
-    character.character_running_speed_modifier = character.character_running_speed_modifier + 0.2 * inc
-  elseif attrib == "STR" then
-    player.character.character_inventory_slots_bonus = player.character.character_inventory_slots_bonus + 5 * inc
-    player.character_mining_speed_modifier = player.character_mining_speed_modifier + 0.1 * inc
-  elseif attrib == "INT" then
-    player.character_crafting_speed_modifier = player.character_crafting_speed_modifier + 0.1 * inc
-    player.character_maximum_following_robot_count_bonus = player.character_maximum_following_robot_count_bonus + 1 * inc
+function pf.update_ap_effect(player)
+  local profile = pf.player_profile(player)
+  for attrib, v in pairs(profile.assigned_ap) do
+    if attrib == "CON" then
+      player.character_health_bonus = player.character_health_bonus + 100 * v
+    elseif attrib == "SPI" then
+      player.character_resource_reach_distance_bonus = player.character_resource_reach_distance_bonus + 1 * v
+      player.character_reach_distance_bonus = player.character_reach_distance_bonus + 1 * v
+      player.character_item_drop_distance_bonus = player.character_item_drop_distance_bonus + 1 * v
+      player.character_build_distance_bonus = player.character_build_distance_bonus + 1 * v
+      player.character_item_pickup_distance_bonus = player.character_item_pickup_distance_bonus + 1 * v
+      player.character_loot_pickup_distance_bonus = player.character_loot_pickup_distance_bonus + 1 * v
+    elseif attrib == "DEX" then
+      player.character_running_speed_modifier = player.character_running_speed_modifier + 0.2 * v
+    elseif attrib == "STR" then
+      player.character.character_inventory_slots_bonus = player.character.character_inventory_slots_bonus + 5 * v
+      player.character_mining_speed_modifier = player.character_mining_speed_modifier + 0.1 * v
+    elseif attrib == "INT" then
+      player.character_crafting_speed_modifier = player.character_crafting_speed_modifier + 0.1 * v
+      player.character_maximum_following_robot_count_bonus = player.character_maximum_following_robot_count_bonus + 1 * v
+    end
   end
 end
 

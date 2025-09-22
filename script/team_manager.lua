@@ -113,7 +113,6 @@ tm.get_new_team_id = get_new_team_id
 local function create_team_force(player, team_name)
   local force_name = "player" .. player.index
   log("create_team_force force_name:" .. force_name)
-
   local force = game.forces[force_name]
   if (force) then
     player.print("当前门派尚未销毁, 请等1分钟")
@@ -138,7 +137,6 @@ local function create_team_force(player, team_name)
     force.technologies["advanced-oil-processing"].enabled = true
     force.technologies["space-platform-thruster"].researched = true
   end
-
   if spawn_surface == "fulgora" then
     force.technologies["planet-discovery-fulgora"].researched = true  -- 发现星球
     force.technologies["advanced-oil-processing"].researched = true   -- 高级石油处理
@@ -155,6 +153,7 @@ local function create_team_force(player, team_name)
     force.technologies["planet-discovery-gleba"].researched = true    -- 发现星球
   end
 
+  -- set friend
   for i, f in pairs(game.forces) do
     if (f.index == force.index) then
       goto continue
@@ -218,6 +217,15 @@ local function create_team_force(player, team_name)
 
   -- tech bonus
   tm.unlock_tech_by_ascension(player)
+
+  -- bonus
+  force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + ascension_cnt * 0.1     -- RW double	
+  force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + ascension_cnt * 0.1 -- RW double	
+  force.laboratory_speed_modifier = force.laboratory_speed_modifier + ascension_cnt * 0.1           -- RW double	
+  force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + ascension_cnt * 0.1   -- RW double	
+  force.worker_robots_speed_modifier = force.worker_robots_speed_modifier + ascension_cnt * 0.1     -- RW double	
+  force.worker_robots_battery_modifier = force.worker_robots_battery_modifier + ascension_cnt * 0.1 -- RW double	
+  force.worker_robots_storage_bonus = force.worker_robots_storage_bonus + ascension_cnt * 0.1       -- RW double	
 
   if is_chunk_generated then
     player.print("传送到[gps=" .. pos.x .. "," .. pos.y .. "]")

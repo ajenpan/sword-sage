@@ -23,7 +23,7 @@ local frame_cfg = {
 
 function ui.create_note_pane(tabbed_pane, player)
   local text = ""
-  text = text .. "⚠注意: mod正在开发中, 有什么想法可以跟服主讲.\n\n"
+  text = text .. "⚠注意: mod正在开发中, 有什么建议想法可以跟服主讲.qq群: 126849387 \n\n"
 
   text = text .. "常用命令: \n"
   text = text .. "▶输入 玩家: 显示在线玩家\n"

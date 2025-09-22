@@ -5,14 +5,12 @@ on:
       - "v*.*.*"
 permissions:
   contents: write
-
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Zip Mod
         run: |
@@ -26,7 +24,14 @@ jobs:
           echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
           echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
           echo "ZIP_NAME=`pwd`/$ZIP_NAME" >> $GITHUB_ENV
-
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ZIP_NAME }}
+          body: |
+            - Mod: **${{ env.MOD_NAME }}**
+            - Version: **${{ env.MOD_VERSION }}**
+            - Tag: **${{ github.ref_name }}**
       - name: Upload to Factorio Mod Portal (init)
         run: |
           RESPONSE=$(curl -s -X POST \
@@ -45,13 +50,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.FACTORIO_API_KEY }}" \
             -F "file=@${ZIP_NAME}" \
             -o upload_result.json
-          cat upload_result.json
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ env.ZIP_NAME }}
-          body: |
-            - Mod: **${{ env.MOD_NAME }}**
-            - Version: **${{ env.MOD_VERSION }}**
-            - Tag: **${{ github.ref_name }}**
+          success=$(cat upload_result.json | jq -r '.success')
