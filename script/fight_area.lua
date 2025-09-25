@@ -8,8 +8,7 @@ local fight_perfix_len = #fight_prefix
 
 local fight_area = {}
 local fight_area_size = 128
-local challenge_time = 60 * TICKS_PER_SECOND
-local challeng_cd = 10 * TICKS_PER_SECOND
+local challeng_cd = 5 * TICKS_PER_SECOND
 
 local challenge_state = {
   unready = 0,
@@ -18,10 +17,12 @@ local challenge_state = {
 }
 
 function fight_area.on_init()
-
+  if storage.fight_area_record == nil then
+    storage.fight_area_record = {}
+  end
 end
 
-local function create_fight_surface(player, config)
+local function create_fight_surface(player)
   local surfacename = fight_prefix .. player.force.name
 
   if game.surfaces[surfacename] ~= nil then
@@ -36,9 +37,9 @@ local function create_fight_surface(player, config)
   map_settings.height = fight_area_size
   local surface = game.create_surface(surfacename, map_settings)
   surface.show_clouds = false
-
-  local zero_point = { x = 0, y = 0 }
-  local size = { x = 8, y = 8 }
+  surface.always_day = true
+  -- local zero_point = { x = 0, y = 0 }
+  -- local size = { x = 8, y = 8 }
   -- if not surface.is_chunk_generated(zero_point) then
   --   log("request_to_generate_chunks:" .. surfacename)
   --   surface.request_to_generate_chunks(zero_point)
@@ -54,10 +55,10 @@ local function create_fight_surface(player, config)
 end
 
 function fight_area.state_info(player)
-  local s = storage.fight_area
+  local s = storage.fight_area_state
   if s == nil then
-    storage.fight_area = {}
-    s = storage.fight_area
+    storage.fight_area_state = {}
+    s = storage.fight_area_state
   end
 
   if s[player.index] == nil then
@@ -70,22 +71,182 @@ function fight_area.state_info(player)
   return s[player.index]
 end
 
-function fight_area.create_enemies(fight_surface)
-  -- TODO:
-  -- fight_surface.create_entity{name = "medium-biter", position = {15, 3}, force = game.forces.enemy} -- Enemy biter
+function fight_area.record_info(player)
+  local s = storage.fight_area_record
+  if s == nil then
+    storage.fight_area_record = {}
+    s = storage.fight_area_record
+  end
+
+  if s[player.index] == nil then
+    s[player.index] = {
+      max_consecutive_victories = 0, -- 最大连胜
+      cur_consecutive_victories = 0, -- 当前连胜, 连败为负数
+      cur_floor = 1,                 --当前楼层
+      config = {}
+    }
+  end
+  return s[player.index]
 end
 
-function fight_area.create_spwaner(surface, config)
+function fight_area.create_enemies(surface, config)
+  fight_area.create_biter_spwaner(surface, config)
+
+  if config.floor > 5 then
+    fight_area.create_worm_turret(surface, config)
+  end
+
+  -- Spitter spawner	
+  if config.floor > 10 then
+    fight_area.create_spitter_spwaner(surface, config)
+  end
+
+  -- Small egg raft
+  if config.floor > 15 then
+    -- gleba_spawner_small
+    fight_area.create_gleba_spawner_small(surface, config)
+  end
+
+  if config.floor > 20 then
+    -- gleba_spawner
+    fight_area.create_gleba_spawner(surface, config)
+  end
+
+  local ex_enemis = {
+    { name = "big-spitter", cnt = config.defficulty, },
+    { name = "behemoth-spitter", cnt = config.defficulty / 2, },
+    { name = "small-strafer-pentapod", cnt = config.defficulty / 10 },
+    { name = "medium-strafer-pentapod", cnt = config.defficulty / 20 },
+    { name = "big-strafer-pentapod", cnt = config.defficulty / 30 },
+    { name = "small-stomper-pentapod", cnt = config.defficulty / 10 },
+    { name = "medium-stomper-pentapod", cnt = config.defficulty / 20 },
+    { name = "big-stomper-pentapod", cnt = config.defficulty / 30 },
+    { name = "small-demolisher", cnt = config.defficulty / 10 },
+    { name = "medium-demolisher", cnt = config.defficulty / 25 },
+    { name = "big-demolisher", cnt = config.defficulty / 50 },
+  }
+
+  local half_size = 60
+  local left_top = { x = -half_size, y = -half_size }
+  local right_bottom = { x = half_size, y = half_size }
+  local spacing = { x = 2, y = 2 }
+
+  local poses = {}
+  mg.create_rect_edge_pos(left_top, right_bottom, { x = 5, y = 5 }, spacing, function (pos, edge)
+    poses[#poses + 1] = pos
+  end)
+
+  poses = g_utils.shuffle(poses)
+
+  for k, v in pairs(ex_enemis) do
+    for i, pos in pairs(poses) do
+      if v.cnt >= 1 then
+        surface.create_entity({
+          name = v.name,
+          position = pos,
+          force = "enemy",
+          quality = config.enemy_quality,
+        })
+        ex_enemis[k].cnt = ex_enemis[k].cnt - 1
+      end
+
+      if ex_enemis[k].cnt < 1 then
+        ex_enemis[k] = nil
+        break
+      end
+    end
+  end
+end
+
+function fight_area.create_worm_turret(surface, config)
+  -- medium-worm-turret
+  local cnt = config.defficulty
+  local worm_turret = "small-worm-turret"
+  if config.floor > 15 then
+    worm_turret = "behemoth-worm-turret"
+  elseif config.floor > 10 then
+    worm_turret = "big-worm-turret"
+  elseif config.floor > 5 then
+    worm_turret = "medium-worm-turret"
+  end
+  local half_size = 20
+  mg.create_rect_edge_pos({ x = -half_size, y = -half_size }, { x = half_size, y = half_size }, { x = 2, y = 2 }, { x = 2, y = 2 }, function (pos)
+    if cnt > 0 then
+      cnt = cnt - 1
+      surface.create_entity({
+        name = worm_turret,
+        position = pos,
+        force = "enemy",
+        quality = config.enemy_quality,
+      })
+    end
+  end)
+end
+
+function fight_area.create_biter_spwaner(surface, config)
   local half_size = 30
+  mg.create_rect_edge_pos({ x = -half_size, y = -half_size }, { x = half_size, y = half_size }, { x = 5, y = 5 }, { x = 4, y = 4 }, function (pos, edge)
+    surface.create_entity({
+      name = "biter-spawner",
+      position = pos,
+      force = "enemy",
+      quality = config.enemy_quality,
+    })
+  end)
+end
+
+function fight_area.create_spitter_spwaner(surface, config)
+  local half_size = 38
+  local cnt = config.defficulty / 2
+  mg.create_rect_edge_pos({ x = -half_size, y = -half_size }, { x = half_size, y = half_size }, { x = 5, y = 5 }, { x = 4, y = 4 }, function (pos, edge)
+    if cnt <= 0 then
+      return
+    end
+    cnt = cnt - 1
+    surface.create_entity({
+      name = "spitter-spawner",
+      position = pos,
+      force = "enemy",
+      quality = config.enemy_quality,
+    })
+  end)
+end
+
+function fight_area.create_gleba_spawner_small(surface, config)
+  local half_size = 45
+  local cnt = config.defficulty / 5
+  mg.create_rect_edge_pos({ x = -half_size, y = -half_size }, { x = half_size, y = half_size }, { x = 5, y = 5 }, { x = 4, y = 4 }, function (pos, edge)
+    if cnt <= 0 then
+      return
+    end
+    cnt = cnt - 1
+    surface.create_entity({
+      name = "gleba-spawner-small",
+      position = pos,
+      force = "enemy",
+      quality = config.enemy_quality,
+    })
+  end)
+end
+
+function fight_area.create_gleba_spawner(surface, config)
+  local half_size = 52
 
   local left_top = { x = -half_size, y = -half_size }
   local right_bottom = { x = half_size, y = half_size }
   local entity_size = { x = 5, y = 5 }
   local spacing = { x = 2, y = 2 }
 
-  local cnt = mg.create_rect_edge_pos(left_top, right_bottom, entity_size, spacing, function (pos, edge)
+  local cnt = config.defficulty / 10
+
+  mg.create_rect_edge_pos(left_top, right_bottom, { x = 5, y = 5 }, spacing, function (pos, edge)
+    if cnt <= 0 then
+      return
+    end
+    cnt = cnt - 1
+
     local entiry = surface.create_entity({
-      name = "biter-spawner",
+      name = "gleba-spawner",
       position = pos,
       force = "enemy",
       quality = config.enemy_quality,
@@ -96,7 +257,7 @@ end
 function fight_area.create(player, config)
   if config == nil then
     config = {
-      lv = 1,
+      player_level = 1,
       enemy_quality = "normal"
     }
   end
@@ -114,13 +275,38 @@ function fight_area.create(player, config)
     return false
   end
 
-  local surface = create_fight_surface(player, config)
+  local record = fight_area.record_info(player)
 
-  local enemy = game.forces["enemy"]
-  enemy.set_evolution_factor((config.lv + 1) * 0.05, surface)
+  -- Difficulty
+  local defficulty = 1.35 ^ record.cur_floor + config.player_level -- 加上转生次数的平方?
+  if record.cur_consecutive_victories > 0 then
+    defficulty = defficulty + record.cur_consecutive_victories
+  end
 
+  defficulty = math.floor(defficulty)
+
+  local surface = create_fight_surface(player)
   fight_area.destroy_all_enemy(surface)
-  fight_area.create_spwaner(surface, config)
+
+  local enemy = game.forces.enemy
+  enemy.set_evolution_factor(defficulty * 0.1, surface)
+
+  local sec = 60 + (record.cur_floor - 1) * 2
+  local challenge_time = sec * TICKS_PER_SECOND
+
+  local def_cfg = {
+    quality = config.enemy_quality,
+    floor = record.cur_floor,
+    defficulty = defficulty,
+    consecutive_victories = record.cur_consecutive_victories,
+  }
+
+  log("user tp fight area:" .. serpent.line(player) .. serpent.line(def_cfg))
+
+  game.print(string.format("道友:%s 进入第%s层镇妖塔,难度:%s,让我们来围观他的表现!!! [gps=0,0,%s]", player.name, record.cur_floor, defficulty, surface.name))
+  player.print(string.format("消灭全部敌人或者存活 %s 秒", g_utils.markup_wrap("color", g_utils.colors_hex.red)(sec)))
+
+  fight_area.create_enemies(surface, def_cfg)
 
   info.last_chanllenge_at = game.tick
   info.player_index = player.index
@@ -134,6 +320,14 @@ function fight_area.create(player, config)
 
   info.state = challenge_state.infight
   g_ptp.set_teleport_enabled(player, false)
+
+  -- attack
+  surface.set_multi_command{
+    command = { type = defines.command.go_to_location, destination = { x = 0, y = 0 }, radius = 10, distraction = defines.distraction.by_enemy },
+    unit_count = 99999,                         -- 想要命令的单位数量上限
+    force = game.forces.enemy,                  -- 哪个 force 的单位
+    unit_search_distance = fight_area_size * 2, -- 搜索范围（tile）
+  }
   return true
 end
 
@@ -180,10 +374,10 @@ function fight_area.on_challenge_fight(player, info)
     return
   end
 
-  if player.character == nil or not player.character.valid then
-    fight_area.do_challenge_finished(player, info)
-    return
-  end
+  -- if player.character == nil or not player.character.valid then
+  --   fight_area.do_challenge_finished(player, info)
+  --   return
+  -- end
 
   if game.tick >= info.expect_end_tick then
     fight_area.do_challenge_finished(player, info, true)
@@ -191,7 +385,7 @@ function fight_area.on_challenge_fight(player, info)
   end
 
   -- check enemy count
-  local enemies = player.character.surface.count_entities_filtered({ force = "enemy" })
+  local enemies = player.surface.count_entities_filtered({ force = "enemy" })
 
   if enemies <= 0 then
     fight_area.do_challenge_finished(player, info, true)
@@ -231,6 +425,32 @@ function fight_area.do_challenge_finished(player, info, success)
 
   local notifystr = string.format("道友 [color=#00ffff]%s[/color] 挑战%s,3秒后传送回原地[gps=%d,%d,%s]", player.name, str, from_pos.x, from_pos.y, from_surface)
   player.print(notifystr)
+
+  -- record
+  local record = fight_area.record_info(player)
+  if success then
+    if record.cur_consecutive_victories >= 0 then
+      -- 连胜
+      record.cur_consecutive_victories = record.cur_consecutive_victories + 1
+    else
+      record.cur_consecutive_victories = 1
+    end
+  else
+    -- 如果失败:
+    if record.cur_consecutive_victories >= 0 then
+      record.cur_consecutive_victories = -1
+    else
+      -- 连败
+      record.cur_consecutive_victories = record.cur_consecutive_victories - 1
+    end
+  end
+  if record.cur_consecutive_victories > record.max_consecutive_victories then
+    record.max_consecutive_victories = record.cur_consecutive_victories
+  end
+
+  if success then
+    record.cur_floor = record.cur_floor + 1
+  end
 end
 
 function fight_area.on_player_died(event)
@@ -247,7 +467,7 @@ function fight_area.on_player_died(event)
 end
 
 function fight_area.on_second(event)
-  local s = storage.fight_area
+  local s = storage.fight_area_state
   if s == nil then
     return
   end
@@ -317,7 +537,7 @@ function fight_area.create_gui_pane(frame, player)
             child.toggled = false
           end
         end
-        fight_area.state_info(player).config.enemy_quality = q
+        fight_area.record_info(player).config.enemy_quality = q
         element.toggled = true
       end
     })
@@ -345,14 +565,52 @@ function fight_area.create_gui_pane(frame, player)
         return
       end
       g_ui.set_main_frame_visible(player, false)
-      local config = fight_area.state_info(player).config
-      config.lv = pf.get_player_level(player)
+      local config = fight_area.record_info(player).config
+      config.player_level = pf.get_player_level(player)
       fight_area.create(player, config)
     end
   })
 
   g_uih.add(frame, { type = "line" })
-  g_uih.add(frame, { type = "label", caption = "镇妖塔排行榜 待开发" })
+  g_uih.add(frame, { type = "label", caption = "镇妖塔排行榜:" })
+
+  -- rank
+  local rank = {}
+  if not storage.fight_area_record then
+    storage.fight_area_record = {}
+  end
+  for k, record in pairs(storage.fight_area_record) do
+    local p = game.players[k]
+    if p then
+      rank[#rank + 1] = {
+        player_name = p.name,
+        cur_floor = record.cur_floor,
+        max_consecutive_victories = record.max_consecutive_victories
+      }
+    end
+  end
+
+  table.sort(rank, function (a, b)
+    if a.cur_floor == b.cur_floor then
+      return a.max_consecutive_victories > b.max_consecutive_victories
+    end
+    return a.cur_floor > b.cur_floor
+  end
+  )
+
+  local tab = g_uih.add(frame, { type = "table", column_count = 4, horizontal_scroll_policy = "never", vertical_scroll_policy = "auto-and-reserve-space" })
+
+  tab.add{ type = "label", caption = "排名" }.style.width = 40
+  tab.add{ type = "label", caption = "称呼" }.style.width = 100
+  tab.add{ type = "label", caption = "层数" }.style.width = 100
+  tab.add{ type = "label", caption = "最高连胜" }.style.width = 100
+
+  for i, info in ipairs(rank) do
+    g_uih.add(tab, { type = "label", caption = "   " .. i, style_table = { width = 40 } })
+    g_uih.add(tab, { type = "label", caption = info.player_name, style_table = { width = 100 } })
+    g_uih.add(tab, { type = "label", caption = info.cur_floor - 1, style_table = { width = 100 } })
+    g_uih.add(tab, { type = "label", caption = info.max_consecutive_victories, style_table = { width = 100 } })
+  end
 end
 
 return fight_area

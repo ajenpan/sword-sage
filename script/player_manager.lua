@@ -95,21 +95,21 @@ function pm.on_player_join_team(event)
       player.print("无法获取装备栏，请检查")
       return
     end
-    -- p_armor.put({ name = "fusion-reactor-equipment", quality = quality })
-    -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })
-    -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })
-    -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })
-    -- p_armor.put({ name = "exoskeleton-equipment", quality = quality })
-    -- p_armor.put({ name = "energy-shield-mk2-equipment", quality = quality })
-    -- p_armor.put({ name = "personal-roboport-mk2-equipment", quality = quality })
-    -- p_armor.put({ name = "night-vision-equipment", quality = quality })
-    -- p_armor.put({ name = "battery-mk2-equipment", quality = quality })
-    -- p_armor.put({ name = "battery-mk2-equipment", quality = quality })
-    -- p_armor.put({ name = "personal-laser-defense-equipment", quality = quality })
-    -- p_armor.put({ name = "personal-laser-defense-equipment", quality = quality })
-    -- p_armor.put({ name = "discharge-defense-equipment", quality = quality })
-    -- p_armor.put({ name = "energy-shield-mk2-equipment", quality = quality })
-    -- p_armor.put({ name = "discharge-defense-equipment", quality = quality })
+    -- player.insert{ name = "fusion-reactor-equipment", quality = quality }
+    -- player.insert{ name = "exoskeleton-equipment", quality = quality }
+    -- player.insert{ name = "exoskeleton-equipment", quality = quality }
+    -- player.insert{ name = "exoskeleton-equipment", quality = quality }
+    -- player.insert{ name = "exoskeleton-equipment", quality = quality }
+    -- player.insert{ name = "energy-shield-mk2-equipment", quality = quality }
+    -- player.insert{ name = "personal-roboport-mk2-equipment", quality = quality }
+    -- player.insert{ name = "night-vision-equipment", quality = quality }
+    -- player.insert{ name = "battery-mk2-equipment", quality = quality }
+    -- player.insert{ name = "battery-mk2-equipment", quality = quality }
+    -- player.insert{ name = "personal-laser-defense-equipment", quality = quality }
+    -- player.insert{ name = "personal-laser-defense-equipment", quality = quality }
+    -- player.insert{ name = "discharge-defense-equipment", quality = quality }
+    -- player.insert{ name = "energy-shield-mk2-equipment", quality = quality }
+    -- player.insert{ name = "discharge-defense-equipment", quality = quality }
     -- player.insert{ name = "railgun", count = 1, quality = quality }
     -- player.insert{ name = "railgun-ammo", count = 100, quality = quality }
   end
@@ -119,6 +119,7 @@ function pm.remove_offline_players()
   -- TODO:
   -- 清理 没有门派的玩家
   -- 重构 玩家最大离线时长控制
+  -- TODO: 清理 其他缓存数据,ui. tm. pf 等
   for _, player in pairs(game.players) do
     if not player.connected then
       local index = g_pf.get_player_ascension_cnt(player)

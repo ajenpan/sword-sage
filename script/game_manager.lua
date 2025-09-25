@@ -41,6 +41,7 @@ local function on_init(event)
   g_pf.on_init()
   g_mg.on_init()
   g_pm.on_init()
+  g_fight_area.on_init()
 end
 
 local function init_gui()

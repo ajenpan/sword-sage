@@ -28,6 +28,7 @@ local function show_move_platform(player_print)
   end
 end
 
+
 -- 矿石采集
 local ore_names = { "uranium-ore", "coal", "stone", "iron-ore", "copper-ore", "tungsten-ore", "calcite", "holmium-ore", "scrap" }
 local herb_names = { "yumako", "jellynut", "spoilage" }

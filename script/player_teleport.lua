@@ -71,11 +71,6 @@ function ptp.teleport_to_planet(player, surface)
     return
   end
 
-  -- if player.character.surface.platform ~= nil then
-  --   player.print("太空中无法传送")
-  --   return
-  -- end
-
   local spawn_position = player.force.get_spawn_position(surface)
 
   local entity = surface.find_entity("substation", spawn_position)

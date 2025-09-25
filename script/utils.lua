@@ -120,5 +120,13 @@ utils.colors_tab = {
   brown = { r = 0.6, g = 0.4, b = 0.1 },
 }
 
+function utils.shuffle(t)
+  math.randomseed(game and game.tick or os.time()) -- 随机种子（factorio 脚本可用 game.tick 保证确定性）
+  for i = #t, 2, -1 do
+    local j = math.random(i)                       -- 在 [1, i] 随机一个
+    t[i], t[j] = t[j], t[i]                        -- 交换
+  end
+  return t
+end
 
 return utils
