@@ -106,6 +106,9 @@ function pf.inc_player_ap(player, attrib, inc)
 end
 
 function pf.update_ap_effect(player)
+  if not (player and player.character) then
+    return
+  end
   local profile = pf.player_profile(player)
   for attrib, v in pairs(profile.assigned_ap) do
     if attrib == "CON" then

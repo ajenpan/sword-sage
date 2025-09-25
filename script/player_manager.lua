@@ -12,6 +12,17 @@ end
 function pm.on_player_joined_game(event)
   local player = game.players[event.player_index]
   if not (player) then return end
+
+  if not (player.character and player.character.valid) then
+    log(player.controller_type)
+    -- if player.controller_type ~= defines.controllers.character then
+    --   player.set_controller{ type = defines.controllers.god }
+    -- end
+    -- player.create_character()
+    -- player.set_controller{ type = defines.controllers.god }
+    return
+  end
+
   -- update player title
   player.tag = g_pf.get_player_title(g_pf.get_player_ascension_cnt(player))
   local playername = g_utils.markup_wrap("color", "#00ffff")(player.name)
