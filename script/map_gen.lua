@@ -320,15 +320,48 @@ function mg.create_team_area(force, pos)
   end
 end
 
-function mg.destroy_team_area(pos)
-  -- local need_destory_surfaces = { "nauvis", "fulgora", "vulcanus", "gleba", "aquilo" }
-  -- local left_top, right_bottom = get_bounding_box_pos(pos, max_team_area_size)
-  -- local chunkpos = get_chunk_pos(left_top, right_bottom)
-  -- for _, surface_name in pairs(need_destory_surfaces) do
-  --   for i, v in pairs(chunkpos) do
-  --     LogI("destroy_team_area delete_chunk:", i, v, left_top, right_bottom)
-  --   end
-  -- end
+function mg.destroy_team_area(pos, force)
+  if not pos then return end
+  local left_top, right_bottom = mg.get_bounding_box_pos(pos, mg.vaild_team_area)
+  local surfaces = { "nauvis", "fulgora", "vulcanus", "gleba", "aquilo" }
+
+  for _, surface_name in ipairs(surfaces) do
+    local surface = game.surfaces[surface_name]
+    if surface and surface.valid then
+      -- 构建查找参数表
+      local search_filters = {
+        area = { left_top, right_bottom }
+      }
+      -- 如果 force 有效，则加入过滤器；否则查找该区域所有势力的实体
+      if force and force.valid then
+        search_filters.force = force
+      end
+      -- 可考虑移除 force 过滤，以清理所有势力的实体，避免遗留
+      -- search_filters.force = nil
+
+      local entities = surface.find_entities_filtered(search_filters)
+
+      for _, entity in ipairs(entities) do
+        if entity.valid then
+          -- 保留资源类实体（矿石等），销毁其他
+          if not entity.prototype.resource_category then
+            entity.destroy()
+          end
+        end
+      end
+
+      -- 清理地面物品
+      local items = surface.find_entities_filtered({
+        area = { left_top, right_bottom },
+        type = "item-entity"
+      })
+      for _, item in ipairs(items) do
+        if item.valid then
+          item.destroy()
+        end
+      end
+    end
+  end
 end
 
 local function create_ore_area(surface, ore_2d, ore_area_size, resource_left_top, resource_amount_map, ore_entity_size)
@@ -397,7 +430,7 @@ function mg.create_team_nauvis_area(force, center_pos, left_top, right_bottom)
 
   mg.create_rect_edge_pos(vaild_area_left_top, vaild_area_right_bottom, { x = 5, y = 5 }, 2, function (pos, edge)
     if edge == "top" then
-      surface.create_entity({ name = "biter-spawner", position = pos, force = force, snap_to_grid = true })
+      surface.create_entity({ name = "biter-spawner", position = pos, force = "enemy", snap_to_grid = true })
     end
   end)
 end

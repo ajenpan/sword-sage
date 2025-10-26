@@ -11,7 +11,7 @@ end
 
 
 local function insert_item(player, item_name, cnt, quality)
-  if not count then count = 1 end
+  if not cnt then cnt = 1 end
   if not quality then quality = "normal" end
   player.insert{ name = item_name, count = cnt, quality = quality }
   player.print("道友" .. g_utils.markup_wrap("color", "#00ffff")(player.name) .. "获得" .. g_utils.item_text(item_name, cnt, quality))
@@ -27,7 +27,6 @@ local function show_move_platform(player_print)
     end
   end
 end
-
 
 -- 矿石采集
 local ore_names = { "uranium-ore", "coal", "stone", "iron-ore", "copper-ore", "tungsten-ore", "calcite", "holmium-ore", "scrap" }

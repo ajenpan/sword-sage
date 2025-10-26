@@ -30,7 +30,7 @@ function ui.create_note_pane(tabbed_pane, player)
   text = text .. "▶输入「钓鱼」「伐木」「采矿」「采药」:  看概率获得物品\n"
   text = text .. "▶输入「捕猎」: 解锁[虫卵处理]科技 ,  并随机获得虫卵\n"
   text = text .. "版本更新计划:"
-  text = text .. "晚上镇妖塔连胜机制"
+  text = text .. "完善镇妖塔连胜机制"
 
   local pane = uih.add(tabbed_pane, { type = "scroll-pane", vertical_scroll_policy = "auto", horizontal_scroll_policy = "never", style_table = { horizontally_stretchable = true, padding = { 5, 0, 5, 10 } } })
 

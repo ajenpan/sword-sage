@@ -114,16 +114,16 @@ function fight_area.create_enemies(surface, config)
 
   local ex_enemis = {
     { name = "big-spitter", cnt = config.defficulty, },
-    { name = "behemoth-spitter", cnt = config.defficulty / 2, },
-    { name = "small-strafer-pentapod", cnt = config.defficulty / 10 },
-    { name = "medium-strafer-pentapod", cnt = config.defficulty / 20 },
-    { name = "big-strafer-pentapod", cnt = config.defficulty / 30 },
-    { name = "small-stomper-pentapod", cnt = config.defficulty / 10 },
-    { name = "medium-stomper-pentapod", cnt = config.defficulty / 20 },
-    { name = "big-stomper-pentapod", cnt = config.defficulty / 30 },
-    { name = "small-demolisher", cnt = config.defficulty / 10 },
-    { name = "medium-demolisher", cnt = config.defficulty / 25 },
-    { name = "big-demolisher", cnt = config.defficulty / 50 },
+    { name = "behemoth-spitter", cnt = config.defficulty / 4, },
+    { name = "small-strafer-pentapod", cnt = config.defficulty / 20 },
+    { name = "medium-strafer-pentapod", cnt = config.defficulty / 40 },
+    { name = "big-strafer-pentapod", cnt = config.defficulty / 60 },
+    { name = "small-stomper-pentapod", cnt = config.defficulty / 20 },
+    { name = "medium-stomper-pentapod", cnt = config.defficulty / 40 },
+    { name = "big-stomper-pentapod", cnt = config.defficulty / 60 },
+    -- { name = "small-demolisher", cnt = config.defficulty / 10 },
+    -- { name = "medium-demolisher", cnt = config.defficulty / 25 },
+    -- { name = "big-demolisher", cnt = config.defficulty / 50 },
   }
 
   local half_size = 60

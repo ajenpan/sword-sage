@@ -6,13 +6,13 @@ local coin_gen_rate = {
   ["small-spitter"] = 0.1,
   ["medium-spitter"] = 0.2,
   ["big-spitter"] = 0.5,
-  ["behemoth-spitter"] = 1,
-  ["small-worm-turret"] = 5,
-  ["medium-worm-turret"] = 10,
-  ["big-worm-turret"] = 15,
-  ["behemoth-worm-turret"] = 25,
-  ["biter-spawner"] = 20,
-  ["spitter-spawner"] = 20,
+  ["behemoth-spitter"] = 0.5,
+  ["small-worm-turret"] = 0.8,
+  ["medium-worm-turret"] = 1,
+  ["big-worm-turret"] = 1,
+  ["behemoth-worm-turret"] = 1,
+  ["biter-spawner"] = 1,
+  ["spitter-spawner"] = 1,
 }
 
 local Coins = {}
@@ -20,7 +20,6 @@ local Coins = {}
 function Coins.on_entity_died(event)
   local count = coin_gen_rate[event.entity.prototype.name]
   if count == nil then
-    -- Coins.drop_coins(event.entity.surface_index, event.entity.position, coin_generation_entry)
     return
   end
 
@@ -31,41 +30,27 @@ function Coins.on_entity_died(event)
       drop_amount = 1
     end
   elseif (count >= 1) then
-    drop_amount = count
-    drop_amount = math.random(math.floor(count * 80), math.floor(count * 120)) / 100
+    -- 修复：确保随机范围有效且结果为正数
+    local min_count = math.max(1, math.floor(count * 80))          -- 至少为1
+    local max_count = math.max(min_count, math.floor(count * 120)) -- 至少等于min_count
+    drop_amount = math.random(min_count, max_count)
   end
 
-  -- 这里准备加上玩家幸运, 考虑是看看是小概率翻倍还是 大概率加一点
-
-  if drop_amount <= 0 then return end
+  -- 添加额外的安全检查
+  drop_amount = math.floor(drop_amount or 0)
+  if drop_amount <= 0 then
+    return
+  end
 
   local surface = game.surfaces[event.entity.surface_index]
   local pos = event.entity.position
 
-  -- game.print("掉落金币:" .. math.floor(drop_amount) .. "个" .. "位置:(" .. math.floor(pos.x) .. "," .. math.floor(pos.y) .. ")")
-
-  -- if storage.ocfg.coin_generation.auto_decon_coins then
-  -- game.surfaces[surface_index].spill_item_stack {
-  --   position = pos,
-  --   stack = { name = "coin", count = math.floor(drop_amount) },
-  --   enable_looted = true,
-  --   force = force,
-  --   -- allow_belts?=false,
-  --   -- max_radius?=…,
-  --   -- use_start_position_on_failure?=false
-  -- }
-  -- else
-
   surface.spill_item_stack{
     position = pos,
-    stack = { name = "coin", count = math.floor(drop_amount) },
+    stack = { name = "coin", count = drop_amount },
     enable_looted = true,
     force = nil,
-    -- allow_belts?=false,
-    -- max_radius?=…,
-    -- use_start_position_on_failure?=false
   }
-  -- end
 end
 
 return Coins

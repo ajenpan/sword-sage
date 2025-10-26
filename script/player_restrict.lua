@@ -16,8 +16,8 @@ if not SwordSageDebugMod then
     end
 
     local weight_sum = 0
-    for _, platform in pairs(platform.force.platforms) do
-      weight_sum = weight_sum + platform.weight
+    for _, p in pairs(platform.force.platforms) do
+      weight_sum = weight_sum + p.weight
     end
 
     if weight_sum > (max_level * 100 + 3000) * 1000 then
@@ -140,7 +140,7 @@ if not SwordSageDebugMod then
   -- 监听玩家复制实体设置事件
   script.on_event(defines.events.on_entity_settings_pasted, function (event)
     local player = game.get_player(event.player_index)
-    local source = event.source         -- 复制源
+    local source = event.source           -- 复制源
     local destination = event.destination -- 粘贴目标
 
     if not (player and player.character and destination and destination.valid) then
@@ -185,7 +185,7 @@ if not SwordSageDebugMod then
     local player = game.get_player(event.player_index)
 
     if not player or not player.character then return end
-    if player.controller_type ~= defines.controllers.character then return end        -- 不是玩家
+    if player.controller_type ~= defines.controllers.character then return end          -- 不是玩家
     if player.physical_controller_type ~= defines.controllers.character then return end -- 不是玩家
 
     -- 检查玩家包裹是否为空或者只有1个物品(穿了衣服)

@@ -38,7 +38,7 @@ function pf.on_init()
   end
 end
 
--- todo: 根据转生次数提高经验要求??
+-- TODO: 根据转生次数提高经验要求??
 function pf.get_required_xp(lv)
   if lv > 0 and lv <= max_level then
     return pf.xp_required_table[lv]
@@ -202,8 +202,14 @@ function pf.on_player_get_xp(player, xp)
   if xp <= 0 then
     return
   end
+
   xp = math.ceil(xp)
   local s = pf.player_profile(player)
+
+  if s.level >= max_level then
+    return
+  end
+
   s.xp = s.xp + xp
 
   local required_xp = pf.get_required_xp(s.level)

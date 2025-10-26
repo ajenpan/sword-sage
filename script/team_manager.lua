@@ -265,6 +265,14 @@ function tm.destroy_team(teaminfo)
   local name = teaminfo.name
   game.print("门派 [color=#ffff00]" .. name .. "[/color] 湮灭于 [color=#ff00ff]归墟[/color]")
 
+  -- 首先：清理门派区域的所有建筑和实体
+  if teaminfo.spawn_position then
+    -- 确保在势力合并前调用
+    if mg and mg.destroy_team_area then
+      mg.destroy_team_area(teaminfo.spawn_position, force) -- 注意这里传入了 force
+    end
+  end
+
   for _, player in pairs(force.players) do
     -- 清空玩家背包
     player.clear_items_inside()
@@ -276,7 +284,6 @@ function tm.destroy_team(teaminfo)
     end
   end
 
-  -- g_mg.destroy_team_area(teaminfo.spawn_position)
 
   tm.all_team_info()[force.index] = nil
 
@@ -286,6 +293,46 @@ function tm.destroy_team(teaminfo)
 
   force.reset()
   game.merge_forces(force, game.forces.player)
+end
+
+-- 新增函数：清理门派区域的所有实体
+function tm.destroy_team_entities(teaminfo)
+  if not teaminfo.area_left_top or not teaminfo.area_right_bottom then
+    return
+  end
+
+  local surfaces = { "nauvis", "fulgora", "vulcanus", "gleba", "aquilo" }
+
+  for _, surface_name in ipairs(surfaces) do
+    local surface = game.surfaces[surface_name]
+    if surface and surface.valid then
+      -- 查找区域内的所有实体
+      local entities = surface.find_entities_filtered{
+        area = { teaminfo.area_left_top, teaminfo.area_right_bottom }
+      }
+
+      -- 销毁所有玩家建造的实体（除了地形和资源）
+      for _, entity in ipairs(entities) do
+        if entity.valid and entity.force.index == teaminfo.force_index then
+          -- 保留资源类实体（矿石等）
+          if not entity.prototype.resource_category then
+            entity.destroy()
+          end
+        end
+      end
+
+      -- 清理该区域的地面物品
+      local items = surface.find_entities_filtered{
+        area = { teaminfo.area_left_top, teaminfo.area_right_bottom },
+        type = "item-entity"
+      }
+      for _, item in ipairs(items) do
+        if item.valid then
+          item.destroy()
+        end
+      end
+    end
+  end
 end
 
 function tm.on_research_finished(event)
@@ -663,15 +710,22 @@ function tm.get_ascension_take_item_cnt(ascension_cnt)
 end
 
 function tm.do_ascension(player)
+  -- 先检查玩家和角色状态
   if not (player and player.character and player.character.valid) then
     return
   end
 
-  if player.character.surface.platform == nil or
-      player.character.surface.platform.space_location == nil then
+  -- 检查是否在仙舟内且到达星系边缘
+  if player.character.surface.platform == nil then
     player.print("玩家未处于仙舟内，无法转生")
     return
   end
+
+  if player.character.surface.platform.space_location == nil then
+    player.print("仙舟未到达星系边缘，无法转生")
+    return
+  end
+
 
   local teaminfo = tm.get_team_info(player)
   if teaminfo == nil then
@@ -717,21 +771,19 @@ function tm.do_ascension(player)
   profile.record_spawn_surface_count[surface_name] = profile.record_spawn_surface_count[surface_name] + 1
 
   -- 先清空玩家背包
-  local main_inventory = player.get_inventory(defines.inventory.character_main)
-  if main_inventory then
-    main_inventory.clear()
+  -- local main_inventory = player.get_inventory(defines.inventory.character_main)
+  player.clear_items_inside()
+
+  -- 将trash的前count格物品插入玩家背包
+  local trash = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
+
+  if take_cnt > #trash then
+    take_cnt = #trash
   end
 
-  if player.character.surface.platform ~= nil then
-    -- 将trash的前count格物品插入玩家背包
-    local trash = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
-    for i = 1, take_cnt do
-      if trash[i].valid_for_read then
-        -- 获取物品堆栈
-        local stack = trash[i]
-        -- 将物品插入玩家背包
-        player.insert(stack)
-      end
+  for i = 1, take_cnt do
+    if trash[i].valid_for_read then
+      player.insert(trash[i])
     end
   end
 
@@ -799,8 +851,6 @@ function tm.unlock_tech_by_ascension(player)
     { threshold = 50, tech = "transport-belt-capacity-1", msg = "传送带容量I" },
     { threshold = 60, tech = "transport-belt-capacity-2", msg = "传送带容量II" }
   }
-
-
 
   -- 处理等级解锁技术
   for _, unlock in ipairs(index_unlocks) do

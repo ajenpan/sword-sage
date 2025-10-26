@@ -129,4 +129,54 @@ function utils.shuffle(t)
   return t
 end
 
+local function str2tab(data)
+  local vt = type(data)
+  if vt == "nil" or vt == "table" then
+    return data
+  elseif vt ~= "string" then
+    return nil
+  end
+  local st = { "return", "{", data, "}" }
+  local rs, rv = dostring(table.concat(st, " "))
+  if rs == true then
+    return rv
+  end
+  return nil
+end
+
+local function tab2str(raw)
+  local rawType = type(raw)
+  if rawType == "string" then
+    return raw
+  elseif rawType ~= "table" then
+    return nil
+  end
+  local s = {}
+  for k, v in pairs(raw) do
+    local kt = type(k)
+    local vt = type(v)
+    if kt == "string" then
+      if vt == "string" then
+        s[#s + 1] = ("%s=%q"):format(k, v)
+      elseif vt == "number" or vt == "boolean" then
+        s[#s + 1] = ("%s=%s"):format(k, tostring(v))
+      elseif vt == "table" then
+        s[#s + 1] = ("%s={%s}"):format(k, tab2str(v))
+      end
+    elseif kt == "number" then
+      if vt == "string" then
+        s[#s + 1] = ("[%d]=%q"):format(k, v)
+      elseif vt == "number" or vt == "boolean" then
+        s[#s + 1] = ("[%d]=%s"):format(k, tostring(v))
+      elseif vt == "table" then
+        s[#s + 1] = ("[%d]={%s}"):format(k, tab2str(v))
+      end
+    end
+  end
+  return table.concat(s, ";")
+end
+
+utils.tab2str = tab2str
+utils.str2tab = str2tab
+
 return utils

@@ -1,3 +1,4 @@
+-- 用于不同的 force 之间共享地图
 local chart = {}
 
 local function chart_entity_position(entity, force, radius)
