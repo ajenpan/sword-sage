@@ -2,8 +2,6 @@
 
 GENERIC_GUI_MAX_HEIGHT = 500
 
-
-local utils = require("script.utils")
 local uih = require("script.ui_helper")
 local ptp = require("script.player_teleport")
 
@@ -53,8 +51,9 @@ end
 
 function ui.create_registered_tabbed_pane(tabbed_pane, player)
   local s = ui.player_storage(player)
-  if s.main_tabbed_pane == nil then
-    s.main_tabbed_pane = {}
+  --TODO 兼容: remove
+  if s.main_tabbed_pane ~= nil then
+    s.main_tabbed_pane = nil
   end
 
   for i, item in ipairs(ui.register_tabbed) do
@@ -66,31 +65,24 @@ function ui.create_registered_tabbed_pane(tabbed_pane, player)
     if tab == nil then
       tab = tabbed_pane.add{ type = "tab", name = tab_name, caption = item.caption }
       pane = tabbed_pane.add{ type = "scroll-pane", name = pane_name, horizontal_scroll_policy = "never", vertical_scroll_policy = "auto-and-reserve-space" }
-
       tabbed_pane.add_tab(tab, pane)
     end
-    -- pane.clear()
-    -- item.create_fn(pane, player)
-    -- item.tab_element = tab
-    -- item.pane_element = pane
-    s.main_tabbed_pane[i] = {
-      tab_element = tab,
-      pane_element = pane,
-    }
   end
 end
 
 function ui.reopen_tabbed_pane(tab_index, player)
+  local info = ui.register_tabbed[tab_index]
+  if not info then return end
+  local pane_name = info.name .. "_pane"
+
   local uis = ui.player_storage(player)
-  -- if uis.main_tabbed_pane_selected_tab_index == tab_index then
-  --   return
-  -- end
   uis.main_tabbed_pane_selected_index = tab_index
-  local tabbed_pane = uis.main_tabbed_pane
-  if not (tabbed_pane and tabbed_pane[tab_index]) then return end
-  local pane = tabbed_pane[tab_index].pane_element
+
+  local pane = player.gui.screen[frame_cfg.frame_name]["main-tabbed-pane"][pane_name]
+  if not (pane) then return end
+
   pane.clear()
-  ui.register_tabbed[tab_index].create_fn(pane, player)
+  info.create_fn(pane, player)
 end
 
 function ui.create_main_float_frame(player)

@@ -286,7 +286,7 @@ function fight_area.create(player, config)
   defficulty = math.floor(defficulty)
 
   local surface = create_fight_surface(player)
-  fight_area.destroy_all_enemy(surface)
+  fight_area.destroy_all(surface)
 
   local enemy = game.forces.enemy
   enemy.set_evolution_factor(defficulty * 0.1, surface)
@@ -301,7 +301,7 @@ function fight_area.create(player, config)
     consecutive_victories = record.cur_consecutive_victories,
   }
 
-  log("user tp fight area:" .. serpent.line(player) .. serpent.line(def_cfg))
+  log("user tp to fight area:" .. serpent.line(player) .. serpent.line(def_cfg))
 
   game.print(string.format("道友:%s 进入第%s层镇妖塔,难度:%s,让我们来围观他的表现!!! [gps=0,0,%s]", player.name, record.cur_floor, defficulty, surface.name))
   player.print(string.format("消灭全部敌人或者存活 %s 秒", g_utils.markup_wrap("color", g_utils.colors_hex.red)(sec)))
@@ -309,7 +309,7 @@ function fight_area.create(player, config)
   fight_area.create_enemies(surface, def_cfg)
 
   info.last_chanllenge_at = game.tick
-  info.player_index = player.index
+  -- info.player_index = player.index
   info.fight_surface_index = surface.index
   info.start_tick = game.tick
   info.expect_end_tick = game.tick + challenge_time
@@ -399,12 +399,12 @@ function fight_area.on_challenge_fight(player, info)
   end
 end
 
-function fight_area.destroy_all_enemy(fight_surface)
+function fight_area.destroy_all(fight_surface)
   if not (fight_surface and fight_surface.valid) then return end
-  local entities = fight_surface.find_entities_filtered({ force = { "enemy" } })
+  local entities = fight_surface.find_entities()
   if entities ~= nil then
     for _, entity in pairs(entities) do
-      if entity.valid then
+      if entity.valid and entity.name ~= "character" then
         entity.destroy()
       end
     end
@@ -417,7 +417,7 @@ function fight_area.do_challenge_finished(player, info, success)
   info.real_finsished_at = game.tick
   info.clear_at = game.tick + 3 * TICKS_PER_SECOND
 
-  fight_area.destroy_all_enemy(game.surfaces[info.fight_surface_index])
+  fight_area.destroy_all(game.surfaces[info.fight_surface_index])
 
   local str = success and "成功" or "失败"
   local from_surface = info.player_from.surface_name
@@ -504,6 +504,8 @@ function fight_area.on_challenge_finished(player, info)
     fight_area.do_challenge_unready(player, info)
     g_ptp.set_teleport_enabled(player, nil)
   end
+
+  -- local surface = game.surfaces[info.fight_surface_index]
 end
 
 function fight_area.do_challenge_unready(player, info)
@@ -551,7 +553,10 @@ function fight_area.create_gui_pane(frame, player)
     on_click = function (event)
       local player = game.get_player(event.player_index)
       if not (player and player.character) then return end
-
+      if not pm.has_team(player) then
+        player.print("没有门派,不许进入")
+        return
+      end
       if player.hub ~= nil then
         player.print("太空中无法传送")
         return

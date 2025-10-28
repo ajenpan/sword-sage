@@ -16,8 +16,9 @@ script.on_event(defines.events.on_player_died, function (event)
   g_ui.set_main_frame_visible(player, false)
 end)
 
--- script.on_event(defines.events.on_chunk_generated, function (event)
--- end)
+script.on_event(defines.events.on_chunk_generated, function (event)
+  g_mg.on_chunk_generated(event)
+end)
 
 script.on_event(defines.events.on_space_platform_changed_state, function (event)
   -- 平台上限
@@ -43,10 +44,8 @@ end)
 
 -- 场景创建时触发
 script.on_event(defines.events.on_game_created_from_scenario, function ()
-  storage.forceInfos = storage.forceInfos or {}
   game.forces.player.share_chart = true
 end)
-
 
 script.on_event(defines.events.on_gui_click, function (event)
   local element = event.element

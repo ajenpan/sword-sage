@@ -83,7 +83,7 @@ function pf.get_player_ap(player, attrib)
 end
 
 function pf.inc_player_ap(player, attrib, inc)
-  if inc == nil or inc <= 0 then
+  if not inc or inc <= 0 then
     inc = 1
   end
 
@@ -96,6 +96,10 @@ function pf.inc_player_ap(player, attrib, inc)
 
   if not profile.assigned_ap[attrib] then
     profile.assigned_ap[attrib] = 0
+  end
+
+  if profile.usable_ap < inc then
+    inc = profile.usable_ap
   end
 
   profile.usable_ap = profile.usable_ap - inc
@@ -161,6 +165,7 @@ function pf.create_profile_pane(frame, player)
 
   uih.add(frame, { type = "line" })
   uih.add(frame, { type = "label", caption = { "usable_ap", usable_ap }, style_table = { font = "default-bold" } })
+  uih.add(frame, { type = "label", caption = "临时提示: ctrl+左键:加10, shift+左键:加100", style_table = { font = "font_default_18" } })
 
   local ap_pane = uih.add(frame, { type = "table", column_count = 2, style_table = { horizontal_spacing = 10, vertical_spacing = 10, padding = { 0, 0, 5, 10 } } })
 
@@ -399,13 +404,23 @@ function pf.on_gui_click(event)
   end
 
   local has_suffix, attrib = get_assign_suffix(element.name)
+
+  local cnt = 1
+  if event.control then
+    cnt = 10
+  end
+
+  if event.shift then
+    cnt = 100
+  end
+
   if has_suffix then
-    pf.on_player_assign_point(player, attrib)
+    pf.on_player_assign_point(player, attrib, cnt)
   end
 end
 
-function pf.on_player_assign_point(player, attrib)
-  pf.inc_player_ap(player, attrib)
+function pf.on_player_assign_point(player, attrib, cnt)
+  pf.inc_player_ap(player, attrib, cnt)
   pf.reflash_player_profile_gui(player)
 end
 

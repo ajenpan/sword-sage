@@ -51,6 +51,7 @@ local function exchange_all_item(player, target_item, price_item, exchange_rate)
 end
 
 local function reflash_shop_pane(player)
+  -- TODO: 优化, 不要使用 storage 来处理
   if not (storage.shop and storage.shop.gui_root) then return end
   storage.shop.gui_root.clear()
   shop.create_shop_pane(storage.shop.gui_root, player)

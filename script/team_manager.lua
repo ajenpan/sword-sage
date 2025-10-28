@@ -267,7 +267,7 @@ function tm.destroy_team(teaminfo)
 
   -- 首先：清理门派区域的所有建筑和实体
   if teaminfo.spawn_position then
-    -- 确保在势力合并前调用
+    -- 确保在合并前调用
     if mg and mg.destroy_team_area then
       mg.destroy_team_area(teaminfo.spawn_position, force) -- 注意这里传入了 force
     end
@@ -284,9 +284,15 @@ function tm.destroy_team(teaminfo)
     end
   end
 
+  -- todo: 销毁太空平台
+  for _, platform in pairs(force.platforms) do
+    local hub = platform.hub
+    if hub then
+      hub.damage(100000000, "enemy")
+    end
+  end
 
   tm.all_team_info()[force.index] = nil
-
   for _, platform in pairs(force.platforms) do
     platform.destroy()
   end
@@ -709,6 +715,22 @@ function tm.get_ascension_take_item_cnt(ascension_cnt)
   return ascension_cnt * 2
 end
 
+function tm.get_ascension_take_items(player, teaminfo)
+  local take_cnt = tm.get_ascension_take_item_cnt(teaminfo.level)
+  local hub = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
+  if take_cnt > #hub then
+    take_cnt = #hub
+  end
+  local take_info = {}
+  for i = 1, take_cnt do
+    if not hub[i].valid_for_read then
+      break
+    end
+    table.insert(take_info, { name = hub[i].name, count = hub[i].count, quality = hub[i].quality.name })
+  end
+  return take_info
+end
+
 function tm.do_ascension(player)
   -- 先检查玩家和角色状态
   if not (player and player.character and player.character.valid) then
@@ -742,24 +764,20 @@ function tm.do_ascension(player)
   profile.level = 1
   profile.xp = 0
   profile.usable_ap = profile.usable_ap + 5
-
   player.tag = g_pf.get_player_title(g_pf.get_player_ascension_cnt(player))
 
-  local take_cnt = tm.get_ascension_take_item_cnt(profile.ascension_cnt)
-  local spawn_surface = teaminfo.spaspawn_surface_name
-  player.force = game.forces.player
+  local take_info = tm.get_ascension_take_items(player, teaminfo)
 
+  local spawn_surface = teaminfo.spaspawn_surface_name
   -- 随机一个
   local surface_names = { "nauvis", "fulgora", "vulcanus", "gleba" }
-  for i, name in pairs(surface_names) do
-    if name == spawn_surface then
-      surface_names[i] = nil
-      break
+  local selected = {}
+  for i, name in ipairs(surface_names) do
+    if name ~= spawn_surface then
+      selected[#selected + 1] = name
     end
   end
-
-  local surface_name = surface_names[math.random(1, #surface_names)]
-  player.character.teleport({ x = 0, y = 0 }, game.surfaces[surface_name])
+  local surface_name = selected[math.random(1, #selected)]
 
   -- 记录玩家重生 surface_name
   if profile.record_spawn_surface_count == nil then
@@ -770,25 +788,22 @@ function tm.do_ascension(player)
   end
   profile.record_spawn_surface_count[surface_name] = profile.record_spawn_surface_count[surface_name] + 1
 
-  -- 先清空玩家背包
-  -- local main_inventory = player.get_inventory(defines.inventory.character_main)
+  player.force = game.forces.player
   player.clear_items_inside()
+  player.character.teleport({ x = 0, y = 0 }, game.surfaces[surface_name])
 
-  -- 将trash的前count格物品插入玩家背包
-  local trash = player.surface.platform.hub.get_inventory(defines.inventory.hub_main)
-
-  if take_cnt > #trash then
-    take_cnt = #trash
-  end
-
-  for i = 1, take_cnt do
-    if trash[i].valid_for_read then
-      player.insert(trash[i])
-    end
+  -- 飞升可携带的物品
+  for _, value in pairs(take_info) do
+    player.insert(value)
   end
 
   tm.destroy_team(teaminfo)
+
   game.print(string.format("〓 星域传音 〓  恭喜 [color=#00ffff]%s[/color] 突破至 %s[gps=%d,%d,%s]", player.name, player.tag, player.position.x, player.position.y, surface_name))
+
+  if player.controller_type == defines.controllers.remote then
+    player.set_controller({ type = defines.controllers.character, character = player.character })
+  end
 end
 
 function tm.unlock_tech_by_ascension(player)

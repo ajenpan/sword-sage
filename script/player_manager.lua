@@ -6,7 +6,7 @@ function pm.on_init()
 end
 
 function pm.has_team(player)
-  return (player.force.name ~= "player")
+  return (player.force and player.force.name ~= "player")
 end
 
 function pm.on_player_joined_game(event)

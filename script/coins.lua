@@ -38,7 +38,7 @@ function Coins.on_entity_died(event)
 
   -- 添加额外的安全检查
   drop_amount = math.floor(drop_amount or 0)
-  if drop_amount <= 0 then
+  if not drop_amount or drop_amount <= 0 then
     return
   end
 

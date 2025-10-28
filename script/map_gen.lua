@@ -191,6 +191,23 @@ function mg.on_init()
   storage.map_gen_init = { step = 1 }
 end
 
+function mg.on_chunk_generated(event)
+  -- local name = event.surface.name
+  -- if name ~= "nauvis" and name ~= "vulcanus" and name ~= "fulgora" and name ~= "gleba" and name ~= "aquilo" then
+  --   return
+  -- end
+  -- for x = 0, 31 do
+  --   for y = 0, 31 do
+  --     local tile_x = event.area.left_top.x + x
+  --     local tile_y = event.area.left_top.y + y
+  --     event.surface.set_tiles({ {
+  --       name = "out-of-map",
+  --       position = { tile_x, tile_y }
+  --     } })
+  --   end
+  -- end
+end
+
 function mg.create_rect_pos(left_top, right_bottom, entity_size, spacing, fn)
   if not fn then return end
   if not entity_size then entity_size = { x = 1, y = 1 } end

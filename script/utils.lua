@@ -137,7 +137,8 @@ local function str2tab(data)
     return nil
   end
   local st = { "return", "{", data, "}" }
-  local rs, rv = dostring(table.concat(st, " "))
+  -- lua 5.2 使用 load 代替 dostring
+  local rs, rv = load(table.concat(st, " "))
   if rs == true then
     return rv
   end
